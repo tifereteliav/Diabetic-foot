@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hyperbaric Rescue - משימת הצלת כף הרגל</title>
+    <!-- Google Fonts: Rubik -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Game Container -->
+    <div id="game-container">
+        
+        <!-- Header / Status Bar -->
+        <header id="game-header" class="hidden">
+            <div class="header-left">
+                <span id="score-display">ניקוד: <strong id="score-val">0</strong></span>
+            </div>
+            <div class="header-center">
+                <h2 id="stage-title">אבחון ומיון</h2>
+            </div>
+            <div class="header-right">
+                <button id="sound-btn" class="icon-btn" aria-label="הפעל/השתק קול">
+                    <svg id="sound-icon-on" class="sound-icon" viewBox="0 0 24 24" width="24" height="24">
+                        <path fill="currentColor" d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.85 14,18.71V20.77C18.03,19.86 21,16.28 21,12C21,7.72 18.03,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.77 16.5,12M3,9V15H7L12,20V4L7,9H3Z" />
+                    </svg>
+                    <svg id="sound-icon-off" class="sound-icon hidden" viewBox="0 0 24 24" width="24" height="24">
+                        <path fill="currentColor" d="M12,4L9.91,6.09L12,8.18M19,12C19,15.17 16.89,17.85 14,18.71V20.77C18.03,19.86 21,16.28 21,12C21,9.35 19.7,7.03 17.74,5.63L16.29,7.08C17.94,8.2 19,10 19,12M16.5,12C16.5,12.79 16.22,13.5 15.77,14.08L14,12.31V7.97C15.5,8.71 16.5,10.23 16.5,12M4.27,3L3,4.27L7.73,9H3V15H7L12,20V13.27L16.25,17.53C15.58,18.04 14.83,18.44 14,18.7V20.76C15.38,20.45 16.63,19.79 17.67,18.95L19.73,21L21,19.73L12,10.73M12,4V7.27L9.09,4.36L12,4Z" />
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Screen Areas -->
+        <main id="game-main">
+
+            <!-- 1. INTRO / WELCOME SCREEN -->
+            <section id="screen-intro" class="game-screen active">
+                <div class="intro-content">
+                    <div class="logo-container">
+                        <div class="pulse-ring"></div>
+                        <svg class="chamber-logo" viewBox="0 0 100 100" width="100" height="100">
+                            <circle cx="50" cy="50" r="45" fill="none" stroke="var(--primary)" stroke-width="4" />
+                            <path d="M30 50 C30 40, 70 40, 70 50 C70 60, 30 60, 30 50" fill="none" stroke="var(--cyan)" stroke-width="3" />
+                            <circle cx="50" cy="50" r="10" fill="var(--primary-glow)" />
+                            <path d="M50 35 L50 65 M35 50 L65 50" stroke="var(--accent-green)" stroke-width="4" stroke-linecap="round" />
+                        </svg>
+                    </div>
+                    <h1>HYPERBARIC RESCUE</h1>
+                    <p class="subtitle">משימת הצלת כף הרגל הסוכרתית</p>
+                    
+                    <div class="card intro-card">
+                        <p>הצטרפו לצוות הרפואה ההיפרברית הלאומי! המשימה שלכם: לאבחן חולים עם כיבים סוכרתיים קשים, להכין אותם בבטחה, ולנהל את הטיפול בתוך <strong>תא הלחץ (HBOT)</strong> כדי למנוע קטיעה ולהביא לריפוי פצעים.</p>
+                        <p class="highlight-text">האם יש לכם את מה שנדרש כדי להציל את הרגל?</p>
+                    </div>
+
+                    <button id="start-btn" class="btn btn-primary btn-lg pulse-anim">התחל טיפול</button>
+                </div>
+            </section>
+
+            <!-- 2. DIAGNOSIS / TRIAGE SCREEN -->
+            <section id="screen-triage" class="game-screen hidden">
+                <div class="screen-layout">
+                    <!-- Left: Clinical Card -->
+                    <div class="patient-card card">
+                        <div class="badge patient-badge">מטופל מס' 1</div>
+                        <h3>יוסי כהן, בן 62</h3>
+                        <p class="patient-desc">חולה סוכרת סוג 2 מזה 15 שנה. פיתח כיב עמוק בכף רגל ימין שאינו מראה סימני החלמה מעל 3 חודשים. מופנה להערכת התאמה לתא לחץ.</p>
+                        
+                        <div class="stats-grid">
+                            <div class="stat-box">
+                                <span class="stat-label">סוכר בדם (בצום)</span>
+                                <span class="stat-value text-orange">142 mg/dL</span>
+                            </div>
+                            <div class="stat-box">
+                                <span class="stat-label">רמת דלקת (CRP)</span>
+                                <span class="stat-value">12 mg/L</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: foot interactive area -->
+                    <div class="interactive-area card">
+                        <h4>הערכת פוטנציאל ההחלמה של הפצע</h4>
+                        <p class="instruction">על מנת לקבוע אם המטופל מתאים לטיפול בתא לחץ ולצפות את סיכויי ההחלמה של הכיב, עלינו לבצע בדיקה ייעודית.</p>
+                        
+                        <!-- Question 1 -->
+                        <div class="quiz-container" id="q1-container">
+                            <h5 class="quiz-question">איזו בדיקה יכולה לסייע בהערכת פוטנציאל ההחלמה של פצע סוכרתי ובהתאמת טיפול לתא לחץ?</h5>
+                            <div class="options-grid">
+                                <button class="option-btn" data-opt="1">1. HbA1c (סוכר תלת-חודשי)</button>
+                                <button class="option-btn" data-opt="2">2. ABI (אינדקס זרוע-קרסול)</button>
+                                <button class="option-btn" data-opt="3" id="correct-q1">3. TcPO2 (לחץ חמצן חוץ-עורי)</button>
+                                <button class="option-btn" data-opt="4">4. CRP (חלבון מגיב C)</button>
+                            </div>
+                        </div>
+
+                        <!-- Scan Action (Hidden until correct answer chosen) -->
+                        <div id="scanner-action" class="hidden">
+                            <div class="scanner-instruction">גררו את חיישן הלייזר מעל הפצע כדי למדוד את רמת הלחץ החלקי של החמצן ברקמה (TcPO2):</div>
+                            
+                            <div class="scanner-zone">
+                                <svg class="foot-diagram" viewBox="0 0 200 250" width="180" height="220">
+                                    <!-- Foot Outline -->
+                                    <path d="M100 20 C70 30, 45 60, 45 110 C45 160, 65 200, 75 220 C85 230, 115 230, 125 220 C135 200, 155 160, 155 110 C155 60, 130 30, 100 20 Z" fill="#3a405a" stroke="#687099" stroke-width="2" />
+                                    <!-- Toes -->
+                                    <circle cx="100" cy="18" r="14" fill="#3a405a" stroke="#687099" stroke-width="2" />
+                                    <circle cx="78" cy="24" r="10" fill="#3a405a" stroke="#687099" stroke-width="2" />
+                                    <circle cx="60" cy="35" r="8" fill="#3a405a" stroke="#687099" stroke-width="2" />
+                                    <circle cx="122" cy="24" r="10" fill="#3a405a" stroke="#687099" stroke-width="2" />
+                                    <circle cx="140" cy="35" r="8" fill="#3a405a" stroke="#687099" stroke-width="2" />
+                                    
+                                    <!-- Wound Area -->
+                                    <path id="foot-wound" d="M90 120 C80 125, 85 145, 100 145 C115 145, 120 125, 110 120 Z" fill="#8b263e" stroke="#c93b5d" stroke-width="2" />
+                                    <circle cx="100" cy="133" r="5" fill="#f49cbb" opacity="0.8" />
+                                </svg>
+                                
+                                <div id="laser-sensor" class="draggable-sensor" draggable="true">
+                                    <span class="sensor-glow"></span>
+                                    <span class="sensor-label">חיישן</span>
+                                </div>
+                                <div id="scan-feedback" class="scan-laser-line hidden"></div>
+                            </div>
+
+                            <div class="gauge-readout card">
+                                <span class="readout-label">תוצאת TcPO2 שנמדדה:</span>
+                                <div class="readout-value-container">
+                                    <span id="tcpo2-val">--</span> <span class="unit">mmHg</span>
+                                </div>
+                                <p id="tcpo2-explanation" class="small-text hidden"></p>
+                            </div>
+                        </div>
+
+                        <!-- Feedback / Explanation Block -->
+                        <div id="triage-feedback" class="feedback-card hidden">
+                            <div class="feedback-icon text-green">✓</div>
+                            <div class="feedback-text">
+                                <strong>נכון מאוד!</strong> בדיקת <strong>TcPO2 (לחץ חמצן חוץ-עורי)</strong> מעריכה את אספקת החמצן המקומית לרקמה סביב הפצע. היא הבדיקה היחידה שמאפשרת לבחון האם העלאת לחץ החמצן הסביבתי תשפר משמעותית את רמת החמצן ברקמה הפגועה, ובכך תאפשר ריפוי.
+                            </div>
+                        </div>
+
+                        <button id="to-prep-btn" class="btn btn-primary hidden float-left">המשך להכנת המטופל</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. PREPARATION / SAFETY SCREEN -->
+            <section id="screen-prep" class="game-screen hidden">
+                <div class="screen-layout">
+                    <!-- Right/Top: Info Panel -->
+                    <div class="prep-sidebar card">
+                        <div class="badge safety-badge">בטיחות תא לחץ</div>
+                        <h3>בקרת סוכר לפני צלילה</h3>
+                        <p class="sidebar-info">טיפול בחמצן היפרברי (HBOT) מגביר את צריכת הגלוקוז על ידי התאים ומעלה את הרגישות לאינסולין. בשל כך, המטופל נמצא בסיכון לפתח <strong>היפוגליקמיה קשה</strong> בתוך התא. תא לחץ סגור ואטום מקשה על טיפול מהיר באירועי היפו, ולכן חובה לוודא רמת סוכר בטוחה לפני הכניסה.</p>
+                        
+                        <div class="glucometer-tool">
+                            <h5>מכשיר גלוקומטר (מד-סוכר)</h5>
+                            <div class="glucometer-display">
+                                <div class="gluco-screen">
+                                    <span class="gluco-status-lbl">גלוקוז</span>
+                                    <span id="gluco-val">---</span>
+                                    <span class="gluco-unit">mg/dL</span>
+                                </div>
+                            </div>
+                            <button id="test-sugar-btn" class="btn btn-accent btn-sm">מדוד סוכר ליוסי</button>
+                        </div>
+                    </div>
+
+                    <!-- Left/Bottom: Quiz Content -->
+                    <div class="interactive-area card">
+                        <div id="prep-q1-section">
+                            <h4>שלב א': קביעת רמת יעד</h4>
+                            
+                            <!-- Question 2 -->
+                            <div class="quiz-container" id="q2-container">
+                                <h5 class="quiz-question">מהו טווח הגלוקוז שאליו אנו שואפים לפני כניסת מטופל סוכרתי לתא לחץ?</h5>
+                                <div class="options-grid">
+                                    <button class="option-btn" data-opt="1">1. זה לא משנה</button>
+                                    <button class="option-btn" data-opt="2">2. 100-150 mg/dL</button>
+                                    <button class="option-btn" data-opt="3" id="correct-q2">3. 150-250 mg/dL</button>
+                                    <button class="option-btn" data-opt="4">4. 250-300 mg/dL</button>
+                                </div>
+                            </div>
+
+                            <div id="gluco-action-area" class="hidden">
+                                <div class="alert-box-warning" id="gluco-alert">
+                                    מדד הסוכר של יוסי הוא <strong>112 mg/dL</strong>. רמה זו נמוכה מטווח היעד הבטוח לתא הלחץ!
+                                </div>
+                                <p class="action-instruction">בצע פעולה לטיפול מונע ביוסי כדי להביא אותו לטווח הבטוח:</p>
+                                <div class="btn-group">
+                                    <button id="give-juice-btn" class="btn btn-accent">תן פחמימה פשוטה (מיץ תפוזים וחטיף קרקר)</button>
+                                    <button id="give-insulin-btn" class="btn btn-danger">הזרק אינסולין נוסף</button>
+                                </div>
+                            </div>
+
+                            <div id="prep-feedback-1" class="feedback-card hidden">
+                                <div class="feedback-icon text-green">✓</div>
+                                <div class="feedback-text">
+                                    <strong>מצוין!</strong> נתת ליוסי פחמימות זמינות. מדד הסוכר שלו עלה כעת ל-<strong>178 mg/dL</strong>, שהוא בתוך טווח היעד הבטוח (150-250 mg/dL). כעת הוא מוגן יותר מהיפו במהלך הטיפול.
+                                </div>
+                                <button id="to-prep-part2-btn" class="btn btn-primary">המשך להערכת סיכונים נוספת</button>
+                            </div>
+                        </div>
+
+                        <!-- Question 3 Section (Hidden until prep-feedback-1 completed) -->
+                        <div id="prep-q2-section" class="hidden">
+                            <h4>שלב ב': זיהוי חולים בסיכון גבוה</h4>
+                            <p class="instruction">מיינו את תיקי המטופלים הבאים המיועדים לטיפול היום בתא הלחץ. אחד מהם בסיכון קיצוני להיפוגליקמיה קשה בתוך התא!</p>
+                            
+                            <!-- Question 3 -->
+                            <div class="quiz-container" id="q3-container">
+                                <h5 class="quiz-question">איזה מהמטופלים הבאים נמצא בסיכון הגבוה ביותר לפתח היפוגליקמיה במהלך הטיפול בתא לחץ?</h5>
+                                <div class="cards-list">
+                                    <button class="patient-card-option" data-opt="a">
+                                        <div class="option-header">מטופל א'</div>
+                                        <p>סוכר 250 mg/dL לפני כניסה לטיפול. ללא הזרקה של אינסולין מהיר ב-4 השעות האחרונות.</p>
+                                    </button>
+                                    <button class="patient-card-option" data-opt="b" id="correct-q3">
+                                        <div class="option-header highlight-option">מטופל ב'</div>
+                                        <p>סוכר 160 mg/dL, דילג על ארוחת הבוקר וקיבל את מינון האינסולין הרגיל שלו שעה לפני הטיפול.</p>
+                                    </button>
+                                    <button class="patient-card-option" data-opt="c">
+                                        <div class="option-header">מטופל ג'</div>
+                                        <p>סוכר 180 mg/dL עם רמת HbA1c של 9% (חוסר איזון כרוני של המחלה).</p>
+                                    </button>
+                                    <button class="patient-card-option" data-opt="d">
+                                        <div class="option-header">מטופל ד'</div>
+                                        <p>מטופל עם כיב איסכמי ברגל סוכרתית וערך TcPO2 נמוך מאוד של 12 mmHg.</p>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div id="prep-feedback-2" class="feedback-card hidden">
+                                <div class="feedback-icon text-green">✓</div>
+                                <div class="feedback-text">
+                                    <strong>נכון מאוד!</strong> מטופל ב' דילג על ארוחה (אין אספקת סוכר חיצונית), הזריק אינסולין שעה לפני (נמצא בשלב שיא ההשפעה של האינסולין) ועומד להיכנס לתא לחץ המגביר את הרגישות לאינסולין. שילוב זה הוא "פצצה מתקתקת" של היפוגליקמיה ומצריך השגחה צמודה, הזנת פחמימות מורכבות/פשוטות מראש, או דחיית הטיפול.
+                                </div>
+                                <button id="to-dive-btn" class="btn btn-accent btn-lg pulse-anim">עבור לתא הלחץ - התחל צלילה!</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. SIMULATOR / THE DIVE SCREEN -->
+            <section id="screen-simulator" class="game-screen hidden">
+                <div class="simulator-layout">
+                    <!-- Simulator Dashboard -->
+                    <div class="sim-dashboard card">
+                        <div class="dashboard-header">
+                            <span class="status-indicator-green" id="sim-status-dot"></span>
+                            <span id="sim-status-lbl">סטטוס: טיפול פעיל</span>
+                            <span id="dive-timer">00:00</span>
+                        </div>
+                        
+                        <div class="chamber-visualization">
+                            <div class="chamber-tube">
+                                <div class="bubble-stream"></div>
+                                <div class="patient-inside">
+                                    <svg viewBox="0 0 100 100" width="100" height="100">
+                                        <!-- Patient body & oxygen mask -->
+                                        <circle cx="50" cy="35" r="18" fill="#d2f1ff" stroke="#33bcff" stroke-width="2" />
+                                        <rect x="30" y="55" width="40" height="40" rx="10" fill="#2d3748" stroke="#33bcff" stroke-width="2" />
+                                        <!-- Oxygen mask overlay -->
+                                        <path d="M44 38 L56 38 L50 48 Z" fill="#33bcff" opacity="0.8" />
+                                        <line x1="50" y1="45" x2="50" y2="70" stroke="#00d2ff" stroke-width="2" />
+                                    </svg>
+                                    <div class="patient-alert-balloon hidden" id="patient-balloon">כואב לי באוזן!</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="stats-grid">
+                            <div class="stat-box">
+                                <span class="stat-label">ריכוז חמצן</span>
+                                <span class="stat-value text-cyan" id="sim-o2">100%</span>
+                            </div>
+                            <div class="stat-box">
+                                <span class="stat-label">סוכר בדם (משוער)</span>
+                                <span class="stat-value" id="sim-sugar">178 mg/dL</span>
+                            </div>
+                            <div class="stat-box">
+                                <span class="stat-label">לחץ בתא (ATA)</span>
+                                <span class="stat-value text-green" id="sim-pressure">1.0 ATA</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Simulator Controls -->
+                    <div class="sim-controls card">
+                        <h4>לוח בקרה היפרברי</h4>
+                        <p class="control-desc">העלו את לחץ התא באמצעות הסליידר לטווח הטיפול המומלץ: <strong>2.0 - 2.4 ATA</strong>. שמרו על יציבות הלחץ!</p>
+                        
+                        <div class="gauge-container">
+                            <div class="pressure-gauge-visual">
+                                <div class="gauge-target-zone"></div>
+                                <div class="gauge-needle" id="pressure-needle"></div>
+                                <span class="gauge-center-dot"></span>
+                                <div class="gauge-ticks">
+                                    <span>1.0</span>
+                                    <span>1.5</span>
+                                    <span>2.0</span>
+                                    <span>2.5</span>
+                                    <span>3.0</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="slider-control">
+                            <label for="pressure-slider" class="slider-label">שסתום דחיסה / פריקה</label>
+                            <input type="range" id="pressure-slider" min="1.0" max="3.0" step="0.05" value="1.0" class="styled-slider">
+                        </div>
+
+                        <!-- Emergency Alarm Panel -->
+                        <div id="sim-event-panel" class="event-panel-card hidden">
+                            <div class="event-header-box">
+                                <span class="alarm-icon">⚠</span>
+                                <span id="event-title">אירוע חירום בתא!</span>
+                            </div>
+                            <p id="event-desc">המטופל מתלונן על כאבי אוזניים עקב עליית לחץ מהירה מדי.</p>
+                            <div class="event-actions">
+                                <button id="event-action-btn" class="btn btn-accent btn-block">הורה למטופל לבצע פעולת פימפום (Valsalva)</button>
+                                <button id="emergency-abort-btn" class="btn btn-danger hidden">עצור טיפול דחוף ופרוק לחץ!</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5. RESULTS SCREEN -->
+            <section id="screen-results" class="game-screen hidden">
+                <div class="results-content text-center">
+                    <div class="trophy-container">
+                        <svg class="trophy-svg" viewBox="0 0 100 100" width="120" height="120">
+                            <path d="M30 20 L70 20 L65 60 C65 70, 35 70, 35 60 Z" fill="#ffd700" stroke="#b8860b" stroke-width="2" />
+                            <path d="M50 70 L50 85 M35 85 L65 85" stroke="#ffd700" stroke-width="4" stroke-linecap="round" />
+                            <path d="M30 25 C20 25, 20 45, 30 45" fill="none" stroke="#ffd700" stroke-width="4" stroke-linecap="round" />
+                            <path d="M70 25 C80 25, 80 45, 70 45" fill="none" stroke="#ffd700" stroke-width="4" stroke-linecap="round" />
+                        </svg>
+                    </div>
+                    
+                    <h1>עבודה מדהימה!</h1>
+                    <p class="subtitle" id="final-achievement">סיימת את הטיפול בהצלחה!</p>
+                    
+                    <div class="card score-card">
+                        <div class="rating-stars" id="star-rating">
+                            <span class="star">★</span>
+                            <span class="star">★</span>
+                            <span class="star">★</span>
+                            <span class="star">★</span>
+                            <span class="star">★</span>
+                        </div>
+                        <div class="score-breakdown">
+                            <p>ניקוד סופי: <strong id="final-score">100</strong> מתוך 100</p>
+                            <p id="score-critique">ניהלת את בטיחות המטופל ואת תא הלחץ בצורה מושלמת ומנעת קטיעה של הרגל!</p>
+                        </div>
+                    </div>
+
+                    <!-- Healing progression foot animation -->
+                    <div class="healing-animation-container card">
+                        <h4>הדמיית ריפוי הפצע לאורך זמן</h4>
+                        <p class="small-text">חמצן היפרברי בלחץ של 2.0-2.4 ATA ממיס חמצן ישירות בפלזמה, מעודד אנגיוגנזה (צמיחת כלי דם חדשים) וקולגן ומאיץ ריפוי:</p>
+                        <div class="healing-stages">
+                            <div class="stage-foot-wrapper">
+                                <svg class="foot-stage-svg" viewBox="0 0 200 250" width="80" height="100">
+                                    <path d="M100 20 C70 30, 45 60, 45 110 C45 160, 65 200, 75 220 C85 230, 115 230, 125 220 C135 200, 155 160, 155 110 C155 60, 130 30, 100 20 Z" fill="#3a405a" stroke="#687099" stroke-width="2" />
+                                    <path d="M90 120 C80 125, 85 145, 100 145 C115 145, 120 125, 110 120 Z" fill="#8b263e" stroke="#c93b5d" stroke-width="2" />
+                                </svg>
+                                <span class="stage-label">לפני</span>
+                            </div>
+                            <div class="stage-arrow">➔</div>
+                            <div class="stage-foot-wrapper">
+                                <svg class="foot-stage-svg" viewBox="0 0 200 250" width="80" height="100">
+                                    <path d="M100 20 C70 30, 45 60, 45 110 C45 160, 65 200, 75 220 C85 230, 115 230, 125 220 C135 200, 155 160, 155 110 C155 60, 130 30, 100 20 Z" fill="#3a405a" stroke="#687099" stroke-width="2" />
+                                    <!-- Wound is smaller and lighter -->
+                                    <path d="M93 124 C86 127, 89 138, 100 138 C111 138, 114 127, 107 124 Z" fill="#a8435d" stroke="#c95b77" stroke-width="2" />
+                                </svg>
+                                <span class="stage-label">טיפול 10</span>
+                            </div>
+                            <div class="stage-arrow">➔</div>
+                            <div class="stage-foot-wrapper">
+                                <svg class="foot-stage-svg animate-heal" viewBox="0 0 200 250" width="80" height="100">
+                                    <path d="M100 20 C70 30, 45 60, 45 110 C45 160, 65 200, 75 220 C85 230, 115 230, 125 220 C135 200, 155 160, 155 110 C155 60, 130 30, 100 20 Z" fill="#3a405a" stroke="#687099" stroke-width="2" />
+                                    <!-- Wound is fully healed / small scar skin color -->
+                                    <path d="M98 129 C96 130, 96 134, 100 134 C104 134, 104 130, 102 129 Z" fill="#c0a9b0" opacity="0.6" />
+                                </svg>
+                                <span class="stage-label">ריפוי מלא!</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Key Medical Summary Cards -->
+                    <div class="card summary-panel text-right">
+                        <h4>סיכום רפואי - מה למדנו?</h4>
+                        <ul>
+                            <li><strong>בדיקת TcPO2</strong> הכרחית לקביעת רמת אספקת החמצן המקומית לרקמות הפצע, ומנבאת האם המטופל יגיב היטב לטיפול בתא לחץ.</li>
+                            <li><strong>בקרת סוכר קפדנית</strong> לפני כניסה לתא היא קריטית: שואפים לטווח <strong>150-250 mg/dL</strong> כדי למנוע היפוגליקמיה תוך-תאית, שכן חמצן היפרברי מוריד את רמת הגלוקוז בדם ומגביר את הרגישות לאינסולין.</li>
+                            <li><strong>הערכת סיכונים אישית</strong>: מטופלים שדילגו על ארוחה או שמינון האינסולין הפעיל שלהם בשיאו הם בסיכון גבוה ביותר להיפוגליקמיה, ויש לתת להם פחמימות מניעתיות מראש.</li>
+                            <li><strong>עבודה בתא לחץ</strong> מחייבת דחיסה הדרגתית (בטווח של <strong>2.0-2.4 ATA</strong>), הדרכה להשוואת לחצים באוזניים (Valsalva) ומעקב הדוק אחר בריאות המטופל למניעת אירועי היפו.</li>
+                        </ul>
+                    </div>
+
+                    <button id="restart-btn" class="btn btn-primary btn-lg">שחק שוב</button>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="audio.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>

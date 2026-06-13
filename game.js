@@ -1,0 +1,810 @@
+/**
+ * Hyperbaric Rescue - Game Logic
+ * Manages game states, user inputs, interactive elements, and simulations.
+ */
+
+document.addEventListener('DOMContentLoaded', () => {
+    // --- GAME STATE ---
+    const state = {
+        score: 0,
+        currentStage: 'intro',
+        soundEnabled: false,
+        
+        // Triage State
+        q1Answered: false,
+        scanComplete: false,
+        tcpo2Value: 0,
+        targetTcPO2: 22, // Low TcPO2, representing ischemia
+        
+        // Prep State
+        q2Answered: false,
+        sugarMeasured: false,
+        sugarValue: 112, // Initial unsafe sugar value
+        sugarCorrected: false,
+        q3Answered: false,
+        
+        // Simulator State
+        diveDuration: 40, // 40 seconds duration
+        timeRemaining: 40,
+        pressureValue: 1.0,
+        targetPressureMin: 2.0,
+        targetPressureMax: 2.4,
+        sugarSimValue: 178,
+        o2Value: 100,
+        simInterval: null,
+        activeEvent: null, // 'ear' or 'hypo'
+        eventTriggered: { ear: false, hypo: false },
+        eventTimer: null,
+        eventTimeLeft: 0,
+        pressureScoreAcc: 0, // Accumulator for pressure scoring
+    };
+
+    // --- DOM ELEMENTS ---
+    const elements = {
+        // Core Layout
+        gameHeader: document.getElementById('game-header'),
+        stageTitle: document.getElementById('stage-title'),
+        scoreVal: document.getElementById('score-val'),
+        soundBtn: document.getElementById('sound-btn'),
+        soundIconOn: document.getElementById('sound-icon-on'),
+        soundIconOff: document.getElementById('sound-icon-off'),
+        
+        // Screens
+        screenIntro: document.getElementById('screen-intro'),
+        screenTriage: document.getElementById('screen-triage'),
+        screenPrep: document.getElementById('screen-prep'),
+        screenSimulator: document.getElementById('screen-simulator'),
+        screenResults: document.getElementById('screen-results'),
+        
+        // Interactive Controls
+        startBtn: document.getElementById('start-btn'),
+        
+        // Triage Screen
+        q1Options: document.querySelectorAll('#q1-container .option-btn'),
+        scannerAction: document.getElementById('scanner-action'),
+        laserSensor: document.getElementById('laser-sensor'),
+        scannerZone: document.querySelector('.scanner-zone'),
+        footWound: document.getElementById('foot-wound'),
+        scanFeedback: document.getElementById('scan-feedback'),
+        tcpo2Val: document.getElementById('tcpo2-val'),
+        tcpo2Explanation: document.getElementById('tcpo2-explanation'),
+        triageFeedback: document.getElementById('triage-feedback'),
+        toPrepBtn: document.getElementById('to-prep-btn'),
+        
+        // Prep Screen
+        q2Options: document.querySelectorAll('#q2-container .option-btn'),
+        testSugarBtn: document.getElementById('test-sugar-btn'),
+        glucoVal: document.getElementById('gluco-val'),
+        glucoActionArea: document.getElementById('gluco-action-area'),
+        glucoAlert: document.getElementById('gluco-alert'),
+        giveJuiceBtn: document.getElementById('give-juice-btn'),
+        giveInsulinBtn: document.getElementById('give-insulin-btn'),
+        prepFeedback1: document.getElementById('prep-feedback-1'),
+        toPrepPart2Btn: document.getElementById('to-prep-part2-btn'),
+        
+        prepQ1Section: document.getElementById('prep-q1-section'),
+        prepQ2Section: document.getElementById('prep-q2-section'),
+        q3Options: document.querySelectorAll('#q3-container .patient-card-option'),
+        prepFeedback2: document.getElementById('prep-feedback-2'),
+        toDiveBtn: document.getElementById('to-dive-btn'),
+        
+        // Simulator Screen
+        diveTimer: document.getElementById('dive-timer'),
+        simO2: document.getElementById('sim-o2'),
+        simSugar: document.getElementById('sim-sugar'),
+        simPressure: document.getElementById('sim-pressure'),
+        pressureSlider: document.getElementById('pressure-slider'),
+        pressureNeedle: document.getElementById('pressure-needle'),
+        simStatusDot: document.getElementById('sim-status-dot'),
+        simStatusLbl: document.getElementById('sim-status-lbl'),
+        simEventPanel: document.getElementById('sim-event-panel'),
+        eventTitle: document.getElementById('event-title'),
+        eventDesc: document.getElementById('event-desc'),
+        eventActionBtn: document.getElementById('event-action-btn'),
+        emergencyAbortBtn: document.getElementById('emergency-abort-btn'),
+        patientBalloon: document.getElementById('patient-balloon'),
+        
+        // Results Screen
+        finalAchievement: document.getElementById('final-achievement'),
+        finalScore: document.getElementById('final-score'),
+        scoreCritique: document.getElementById('score-critique'),
+        stars: document.querySelectorAll('#star-rating .star'),
+        restartBtn: document.getElementById('restart-btn'),
+    };
+
+    // --- AUDIO TOGGLE ---
+    elements.soundBtn.addEventListener('click', () => {
+        state.soundEnabled = !state.soundEnabled;
+        if (state.soundEnabled) {
+            elements.soundIconOn.classList.remove('hidden');
+            elements.soundIconOff.classList.add('hidden');
+            gameAudio.setMute(false);
+            gameAudio.playClick();
+            
+            // Resume hum if inside simulator
+            if (state.currentStage === 'simulator' && !state.activeEvent) {
+                gameAudio.startHum();
+            }
+        } else {
+            elements.soundIconOn.classList.add('hidden');
+            elements.soundIconOff.classList.remove('hidden');
+            gameAudio.setMute(true);
+        }
+    });
+
+    // --- NAVIGATION HELPERS ---
+    function updateScore(amount) {
+        state.score += amount;
+        if (state.score < 0) state.score = 0;
+        elements.scoreVal.textContent = state.score;
+    }
+
+    function showScreen(screen) {
+        // Hide all screens
+        elements.screenIntro.classList.add('hidden');
+        elements.screenTriage.classList.add('hidden');
+        elements.screenPrep.classList.add('hidden');
+        elements.screenSimulator.classList.add('hidden');
+        elements.screenResults.classList.add('hidden');
+        
+        // Show target screen
+        screen.classList.remove('hidden');
+        
+        // Update stage configuration
+        if (screen === elements.screenIntro) {
+            state.currentStage = 'intro';
+            elements.gameHeader.classList.add('hidden');
+        } else {
+            elements.gameHeader.classList.remove('hidden');
+            if (screen === elements.screenTriage) {
+                state.currentStage = 'triage';
+                elements.stageTitle.textContent = 'אבחון ומיון';
+            } else if (screen === elements.screenPrep) {
+                state.currentStage = 'prep';
+                elements.stageTitle.textContent = 'הכנה ובטיחות';
+            } else if (screen === elements.screenSimulator) {
+                state.currentStage = 'simulator';
+                elements.stageTitle.textContent = 'סימולטור תא לחץ';
+            } else if (screen === elements.screenResults) {
+                state.currentStage = 'results';
+                elements.stageTitle.textContent = 'תוצאות הטיפול';
+            }
+        }
+    }
+
+    // --- GAME INTRO FLOW ---
+    elements.startBtn.addEventListener('click', () => {
+        // Initialize Audio Context on first click
+        gameAudio.init();
+        gameAudio.playClick();
+        
+        state.score = 0;
+        updateScore(0);
+        
+        showScreen(elements.screenTriage);
+    });
+
+    // --- STAGE 1: TRIAGE / DIAGNOSIS ---
+    elements.q1Options.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            if (state.q1Answered) return;
+            
+            const selectedOpt = btn.getAttribute('data-opt');
+            
+            if (selectedOpt === '3') { // Correct answer: TcPO2
+                state.q1Answered = true;
+                btn.classList.add('correct');
+                gameAudio.playSuccess();
+                updateScore(30);
+                
+                // Show Laser scanner interactive section
+                setTimeout(() => {
+                    elements.scannerAction.classList.remove('hidden');
+                    setupScannerDragging();
+                }, 800);
+            } else {
+                btn.classList.add('wrong');
+                gameAudio.playError();
+                updateScore(-5);
+                
+                // Brief shake or red flash
+                btn.style.transform = 'translateX(5px)';
+                setTimeout(() => { btn.style.transform = ''; }, 100);
+            }
+        });
+    });
+
+    // TcPO2 Laser Scanner Touch & Mouse Drag Setup
+    function setupScannerDragging() {
+        let isDragging = false;
+        let startX, startY;
+        let sensorX = 20; // Initial left (from style.css)
+        let sensorY = 20; // Initial top (from style.css)
+        
+        const sensor = elements.laserSensor;
+        const container = elements.scannerZone;
+        const wound = elements.footWound;
+        
+        sensor.addEventListener('pointerdown', (e) => {
+            isDragging = true;
+            sensor.setPointerCapture(e.pointerId);
+            startX = e.clientX - sensorX;
+            startY = e.clientY - sensorY;
+            gameAudio.playClick();
+            sensor.style.cursor = 'grabbing';
+        });
+        
+        sensor.addEventListener('pointermove', (e) => {
+            if (!isDragging) return;
+            
+            // Calculate new position
+            let x = e.clientX - startX;
+            let y = e.clientY - startY;
+            
+            // Containment boundaries within container
+            const maxLeft = container.clientWidth - sensor.clientWidth;
+            const maxTop = container.clientHeight - sensor.clientHeight;
+            
+            if (x < 0) x = 0;
+            if (x > maxLeft) x = maxLeft;
+            if (y < 0) y = 0;
+            if (y > maxTop) y = maxTop;
+            
+            sensorX = x;
+            sensorY = y;
+            
+            sensor.style.left = `${sensorX}px`;
+            sensor.style.top = `${sensorY}px`;
+            
+            // Check overlap with the wound
+            const sensorRect = sensor.getBoundingClientRect();
+            const woundRect = wound.getBoundingClientRect();
+            
+            // Center of sensor
+            const sCenterX = sensorRect.left + sensorRect.width / 2;
+            const sCenterY = sensorRect.top + sensorRect.height / 2;
+            
+            // Center of wound
+            const wCenterX = woundRect.left + woundRect.width / 2;
+            const wCenterY = woundRect.top + woundRect.height / 2;
+            
+            // Distance formula
+            const dist = Math.sqrt(Math.pow(sCenterX - wCenterX, 2) + Math.pow(sCenterY - wCenterY, 2));
+            
+            if (dist < 40) { // Hovering over wound
+                if (!container.classList.contains('scanning-active')) {
+                    container.classList.add('scanning-active');
+                    elements.scanFeedback.classList.remove('hidden');
+                }
+                
+                // Play sonar scanner sound occasionally
+                if (Math.random() < 0.15) {
+                    gameAudio.playScan();
+                }
+                
+                // Increment TcPO2 value
+                if (state.tcpo2Value < state.targetTcPO2) {
+                    state.tcpo2Value += 1;
+                    elements.tcpo2Val.textContent = state.tcpo2Value;
+                } else if (state.tcpo2Value === state.targetTcPO2 && !state.scanComplete) {
+                    // Scanning Complete!
+                    state.scanComplete = true;
+                    container.classList.remove('scanning-active');
+                    elements.scanFeedback.classList.add('hidden');
+                    sensor.style.display = 'none'; // hide sensor
+                    
+                    gameAudio.playSuccess();
+                    updateScore(20);
+                    
+                    // Display explanation
+                    elements.tcpo2Explanation.innerHTML = `
+                        <strong>תוצאה נמוכה! 22 mmHg</strong><br>
+                        ערך תקין סביב כף הרגל הוא מעל 40 mmHg.
+                        רמה של 22 mmHg מראה על איסכמיה מקומית חמורה (חוסר חמצן ברקמה). 
+                        מצב זה מנבא כי פוטנציאל הריפוי הספונטני נמוך, אך מעיד על <strong>התאמה מצוינת לטיפול בתא לחץ</strong>, אשר יציף את הרקמות בחמצן ויעודד ריפוי!
+                    `;
+                    elements.tcpo2Explanation.classList.remove('hidden');
+                    
+                    elements.triageFeedback.classList.remove('hidden');
+                    elements.toPrepBtn.classList.remove('hidden');
+                }
+            } else {
+                container.classList.remove('scanning-active');
+                elements.scanFeedback.classList.add('hidden');
+            }
+        });
+        
+        sensor.addEventListener('pointerup', (e) => {
+            isDragging = false;
+            sensor.style.cursor = 'grab';
+            container.classList.remove('scanning-active');
+            elements.scanFeedback.classList.add('hidden');
+        });
+        
+        sensor.addEventListener('pointercancel', () => {
+            isDragging = false;
+            container.classList.remove('scanning-active');
+            elements.scanFeedback.classList.add('hidden');
+        });
+    }
+
+    elements.toPrepBtn.addEventListener('click', () => {
+        gameAudio.playClick();
+        showScreen(elements.screenPrep);
+    });
+
+    // --- STAGE 2: PREPARATION & SAFETY ---
+    
+    // Part 1: Targets (Q2)
+    elements.q2Options.forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (state.q2Answered) return;
+            
+            const selectedOpt = btn.getAttribute('data-opt');
+            
+            if (selectedOpt === '3') { // Target 150-250 mg/dL
+                state.q2Answered = true;
+                btn.classList.add('correct');
+                gameAudio.playSuccess();
+                updateScore(30);
+                
+                // Show Glucometer Section
+                setTimeout(() => {
+                    elements.glucoActionArea.classList.remove('hidden');
+                }, 800);
+            } else {
+                btn.classList.add('wrong');
+                gameAudio.playError();
+                updateScore(-5);
+                btn.style.transform = 'translateX(5px)';
+                setTimeout(() => { btn.style.transform = ''; }, 100);
+            }
+        });
+    });
+
+    // Glucometer Blood sugar measurement
+    elements.testSugarBtn.addEventListener('click', () => {
+        if (state.sugarMeasured) return;
+        
+        gameAudio.playBeep(1000, 'sine', 0.1, 0.08);
+        elements.testSugarBtn.disabled = true;
+        elements.glucoVal.textContent = "---";
+        
+        // Simulate reading
+        let count = 0;
+        let interval = setInterval(() => {
+            elements.glucoVal.textContent = Math.floor(Math.random() * 200 + 50);
+            count++;
+            if (count > 8) {
+                clearInterval(interval);
+                state.sugarMeasured = true;
+                elements.glucoVal.textContent = state.sugarValue;
+                elements.glucoVal.style.color = '#ff9f0a';
+                gameAudio.playBeep(1200, 'sine', 0.25, 0.1);
+                
+                // Enable therapy choice buttons
+                elements.giveJuiceBtn.disabled = false;
+                elements.giveInsulinBtn.disabled = false;
+            }
+        }, 100);
+    });
+
+    // Correct response: Give Juice / carbs
+    elements.giveJuiceBtn.addEventListener('click', () => {
+        if (state.sugarCorrected) return;
+        
+        state.sugarCorrected = true;
+        state.sugarValue = 178; // Target corrected sugar
+        elements.glucoVal.textContent = state.sugarValue;
+        elements.glucoVal.style.color = '#05ff7b';
+        
+        gameAudio.playSuccess();
+        updateScore(20);
+        
+        elements.glucoAlert.classList.add('hidden');
+        elements.giveJuiceBtn.classList.add('correct');
+        elements.giveInsulinBtn.disabled = true;
+        
+        elements.prepFeedback1.classList.remove('hidden');
+    });
+
+    // Wrong response: Inject Insulin
+    elements.giveInsulinBtn.addEventListener('click', () => {
+        gameAudio.playError();
+        updateScore(-10);
+        
+        alert("סכנה חמורה! הזרקת אינסולין במצב של סוכר 112 mg/dL לפני תא לחץ תגרום לקריסת רמת הסוכר (היפוגליקמיה קשה ומסכנת חיים) במהלך הטיפול. תא לחץ אינו נגיש למענה מהיר! עליך לתת לו פחמימות כדי להעלות את הסוכר.");
+    });
+
+    elements.toPrepPart2Btn.addEventListener('click', () => {
+        gameAudio.playClick();
+        elements.prepQ1Section.classList.add('hidden');
+        elements.prepQ2Section.classList.remove('hidden');
+    });
+
+    // Part 2: Patient selection (Q3)
+    elements.q3Options.forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (state.q3Answered) return;
+            
+            const selectedOpt = btn.getAttribute('data-opt');
+            
+            if (selectedOpt === 'b') { // Patient B is high risk
+                state.q3Answered = true;
+                btn.classList.add('correct');
+                gameAudio.playSuccess();
+                updateScore(30);
+                
+                elements.prepFeedback2.classList.remove('hidden');
+            } else {
+                btn.classList.add('wrong');
+                gameAudio.playError();
+                updateScore(-5);
+                btn.style.transform = 'translateX(5px)';
+                setTimeout(() => { btn.style.transform = ''; }, 100);
+            }
+        });
+    });
+
+    elements.toDiveBtn.addEventListener('click', () => {
+        gameAudio.playClick();
+        showScreen(elements.screenSimulator);
+        startSimulation();
+    });
+
+    // --- STAGE 3: CHAMBER SIMULATOR ---
+    function updatePressureNeedle(val) {
+        // Map pressure [1.0 to 3.0] to angle [-90deg to +90deg]
+        const angle = -90 + ((val - 1.0) / 2.0) * 180;
+        elements.pressureNeedle.style.transform = `rotate(${angle}deg)`;
+    }
+
+    function startSimulation() {
+        // Start background sound hum
+        if (state.soundEnabled) {
+            gameAudio.startHum();
+        }
+        
+        state.timeRemaining = state.diveDuration;
+        state.pressureValue = 1.0;
+        elements.pressureSlider.value = 1.0;
+        updatePressureNeedle(1.0);
+        
+        elements.simPressure.textContent = '1.0 ATA';
+        elements.simSugar.textContent = '178 mg/dL';
+        elements.simO2.textContent = '100%';
+        
+        state.eventTriggered.ear = false;
+        state.eventTriggered.hypo = false;
+        state.activeEvent = null;
+        
+        // Game simulation clock (1 second intervals)
+        state.simInterval = setInterval(() => {
+            state.timeRemaining--;
+            
+            // Update clock display
+            const mins = Math.floor(state.timeRemaining / 60);
+            const secs = state.timeRemaining % 60;
+            elements.diveTimer.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            
+            // Slowly decrease blood sugar simulated levels due to HBOT effect
+            if (!state.activeEvent || state.activeEvent !== 'hypo') {
+                // decrease by 0.5 mg/dl per second under pressure
+                state.sugarSimValue = Math.max(70, Math.floor(178 - (40 - state.timeRemaining) * 0.8));
+                elements.simSugar.textContent = `${state.sugarSimValue} mg/dL`;
+            }
+            
+            // Read slider value
+            const currentSlider = parseFloat(elements.pressureSlider.value);
+            state.pressureValue = currentSlider;
+            elements.simPressure.textContent = `${state.pressureValue.toFixed(2)} ATA`;
+            updatePressureNeedle(state.pressureValue);
+            
+            // Pressure tracking check
+            checkPressureStability();
+            
+            // Trigger Random Events at fixed times
+            if (state.timeRemaining === 32 && !state.eventTriggered.ear) {
+                triggerEarEvent();
+            }
+            if (state.timeRemaining === 18 && !state.eventTriggered.hypo) {
+                triggerHypoEvent();
+            }
+            
+            // End of Simulation
+            if (state.timeRemaining <= 0) {
+                endSimulation(true);
+            }
+        }, 1000);
+        
+        // Real-time loop for smoother UI sliders (50ms interval)
+        state.uiLoop = setInterval(() => {
+            const currentSlider = parseFloat(elements.pressureSlider.value);
+            if (Math.abs(state.pressureValue - currentSlider) > 0.01) {
+                state.pressureValue = currentSlider;
+                elements.simPressure.textContent = `${state.pressureValue.toFixed(2)} ATA`;
+                updatePressureNeedle(state.pressureValue);
+            }
+        }, 50);
+    }
+
+    function checkPressureStability() {
+        if (state.activeEvent) return; // ignore standard scoring during active emergencies
+        
+        const p = state.pressureValue;
+        if (p >= state.targetPressureMin && p <= state.targetPressureMax) {
+            // Perfect pressure
+            elements.simStatusDot.className = 'status-indicator-green';
+            elements.simStatusLbl.textContent = 'סטטוס: טיפול תקין - לחץ אופטימיל';
+            elements.simStatusLbl.className = 'text-green';
+            
+            // Accumulate scoring
+            state.pressureScoreAcc += 0.5;
+            if (state.pressureScoreAcc >= 1) {
+                updateScore(1);
+                state.pressureScoreAcc = 0;
+            }
+        } else if (p < state.targetPressureMin) {
+            // Low pressure
+            elements.simStatusDot.className = 'status-indicator-green'; // keep green but warning text
+            elements.simStatusDot.style.backgroundColor = '#ff9f0a';
+            elements.simStatusDot.style.boxShadow = '0 0 8px #ff9f0a';
+            elements.simStatusLbl.textContent = 'סטטוס: לחץ נמוך מדי. טיפול אינו יעיל.';
+            elements.simStatusLbl.className = 'text-orange';
+        } else {
+            // High pressure
+            elements.simStatusDot.className = 'status-indicator-red';
+            elements.simStatusLbl.textContent = 'סטטוס: לחץ גבוה מדי! סכנת רעילות חמצן.';
+            elements.simStatusLbl.className = 'text-red';
+            
+            // Lose points for high pressure trauma danger
+            updateScore(-1);
+        }
+    }
+
+    // EVENT 1: Ear Pressure Pain
+    function triggerEarEvent() {
+        state.eventTriggered.ear = true;
+        state.activeEvent = 'ear';
+        
+        // Visual effects
+        elements.patientBalloon.textContent = "איי! כואב לי באוזניים!";
+        elements.patientBalloon.classList.remove('hidden');
+        elements.simStatusDot.className = 'status-indicator-red';
+        
+        // Show control panel warning
+        elements.eventTitle.textContent = "אירוע: לחץ באוזניים (Barotrauma)";
+        elements.eventDesc.textContent = "עקב שינוי לחץ, המטופל חש כאב עז באוזניים ומתקשה בהשוואת לחצים. כיצד תנחה אותו?";
+        elements.eventActionBtn.textContent = "הורה למטופל לבצע פעולת פימפום (Valsalva)";
+        elements.eventActionBtn.className = "btn btn-accent btn-block";
+        elements.emergencyAbortBtn.classList.add('hidden');
+        elements.simEventPanel.classList.remove('hidden');
+        
+        // Start alarm sound
+        if (state.soundEnabled) {
+            gameAudio.startAlarm();
+        }
+        
+        // Event timer (must resolve in 6 seconds)
+        state.eventTimeLeft = 6;
+        state.eventTimer = setInterval(() => {
+            state.eventTimeLeft--;
+            if (state.eventTimeLeft <= 0) {
+                // Failure to resolve in time
+                resolveEarEvent(false);
+            }
+        }, 1000);
+    }
+
+    // Resolve Ear event
+    elements.eventActionBtn.addEventListener('click', () => {
+        if (state.activeEvent === 'ear') {
+            resolveEarEvent(true);
+        } else if (state.activeEvent === 'hypo') {
+            resolveHypoEvent(true);
+        }
+    });
+
+    function resolveEarEvent(success) {
+        clearInterval(state.eventTimer);
+        gameAudio.stopAlarm();
+        
+        elements.patientBalloon.classList.add('hidden');
+        elements.simEventPanel.classList.add('hidden');
+        state.activeEvent = null;
+        
+        if (success) {
+            gameAudio.playSuccess();
+            updateScore(15);
+            alert("המטופל פימפם בהצלחה (שיטת ולסלבה) והשוואה את הלחצים באוזן התיכונה. הלחץ חזר לרמה נוחה.");
+        } else {
+            gameAudio.playError();
+            updateScore(-15);
+            alert("לא הגבת בזמן. המטופל סבל מכאבי אוזניים עזים, מה שאילץ אותך להאט את קצב עליית הלחץ. נגרם נזק קל לעור התוף (Barotrauma).");
+        }
+    }
+
+    // EVENT 2: Hypoglycemia Crisis
+    function triggerHypoEvent() {
+        state.eventTriggered.hypo = true;
+        state.activeEvent = 'hypo';
+        
+        // Visual effects
+        elements.patientBalloon.textContent = "אני מזיע ומרגיש חלש מאוד...";
+        elements.patientBalloon.classList.remove('hidden');
+        elements.simStatusDot.className = 'status-indicator-red';
+        
+        // Display dropping sugar values
+        state.sugarSimValue = 48;
+        elements.simSugar.textContent = `${state.sugarSimValue} mg/dL`;
+        elements.simSugar.classList.add('text-red');
+        
+        // Show control panel warning
+        elements.eventTitle.textContent = "חירום: היפוגליקמיה קיצונית בתא!";
+        elements.eventDesc.textContent = "רמת הסוכר של המטופל קרסה ל-48 mg/dL. הוא בהכרה אך מבולבל ומזיע. מהו הטיפול המיידי?";
+        elements.eventActionBtn.textContent = "הזן גלוקוז נוזלי דרך פתח מעבר האביזרים (Pass-through)";
+        elements.eventActionBtn.className = "btn btn-accent btn-block";
+        elements.emergencyAbortBtn.classList.remove('hidden');
+        elements.simEventPanel.classList.remove('hidden');
+        
+        // Start alarm sound
+        if (state.soundEnabled) {
+            gameAudio.startAlarm();
+        }
+        
+        // Event timer (must resolve in 6 seconds)
+        state.eventTimeLeft = 6;
+        state.eventTimer = setInterval(() => {
+            state.eventTimeLeft--;
+            if (state.eventTimeLeft <= 0) {
+                // Failure to resolve
+                resolveHypoEvent(false);
+            }
+        }, 1000);
+    }
+
+    function resolveHypoEvent(success) {
+        clearInterval(state.eventTimer);
+        gameAudio.stopAlarm();
+        
+        elements.patientBalloon.classList.add('hidden');
+        elements.simEventPanel.classList.add('hidden');
+        state.activeEvent = null;
+        
+        elements.simSugar.classList.remove('text-red');
+        
+        if (success) {
+            state.sugarSimValue = 115; // Recovered sugar
+            elements.simSugar.textContent = `${state.sugarSimValue} mg/dL`;
+            gameAudio.playSuccess();
+            updateScore(25);
+            alert("מצוין! העברת לו גלוקוז נוזלי דרך שסתום האביזרים הייעודי של התא מבלי לפגוע בלחץ. המטופל שתה אותו, הסוכר עלה ל-115 mg/dL והוא התאושש במהירות.");
+        } else {
+            // Patient faints
+            gameAudio.playError();
+            updateScore(-25);
+            alert("המטופל איבד את ההכרה עקב היפוגליקמיה קשה! חובה להפסיק טיפול מיידית ולבצע פריקת לחץ מהירה ומבוקרת לשליפת המטופל.");
+            endSimulation(false); // Immediate game failure / early end
+        }
+    }
+
+    elements.emergencyAbortBtn.addEventListener('click', () => {
+        if (state.activeEvent === 'hypo') {
+            clearInterval(state.eventTimer);
+            gameAudio.stopAlarm();
+            gameAudio.playClick();
+            
+            elements.patientBalloon.classList.add('hidden');
+            elements.simEventPanel.classList.add('hidden');
+            state.activeEvent = null;
+            
+            alert("עצרת את הטיפול באופן חירום. המטופל פונה בבטחה להמשך עירוי גלוקוז בחוץ, אך הטיפול נקטע.");
+            endSimulation(false);
+        }
+    });
+
+    function endSimulation(completedSuccessfully) {
+        // Stop sound hum
+        gameAudio.stopHum();
+        gameAudio.stopAlarm();
+        
+        // Clear loops
+        clearInterval(state.simInterval);
+        clearInterval(state.uiLoop);
+        if (state.eventTimer) clearInterval(state.eventTimer);
+        
+        // Transition screen
+        showScreen(elements.screenResults);
+        renderResults(completedSuccessfully);
+    }
+
+    // --- STAGE 4: RESULTS & SUMMARY ---
+    function renderResults(completedSuccessfully) {
+        // Calculate stars based on score
+        let starsCount = 1;
+        let critique = "";
+        let achievement = "";
+        
+        if (!completedSuccessfully) {
+            starsCount = 1;
+            achievement = "הטיפול נכשל בחירום!";
+            critique = "המטופל איבד הכרה במהלך הטיפול עקב היפוגליקמיה שלא טופלה בזמן, או שהטיפול נקטע מוקדם מדי. עליך לעקוב בקפידה אחר בטיחות הסוכר לפני ובמהלך הכניסה לתא הלחץ.";
+            elements.finalScore.textContent = `${state.score} (טיפול חלקי)`;
+        } else {
+            achievement = "סיימת את הטיפול בהצלחה!";
+            elements.finalScore.textContent = state.score;
+            
+            if (state.score >= 90) {
+                starsCount = 5;
+                critique = "עבודה מדהימה! אבחנת נכון בעזרת בדיקת TcPO2, איזנת את רמות הגלוקוז בצורה מונעת בטווח 150-250 mg/dL, בחרת את המטופל בסיכון, וניהלת את תא הלחץ ללא רבב. הצלת את רגלו של יוסי מקטיעה!";
+            } else if (state.score >= 75) {
+                starsCount = 4;
+                critique = "עבודה טובה מאוד! זיהית את הבדיקות והסיכונים וניהלת את תא הלחץ היטב. היו מספר שגיאות קלות בניהול הלחץ או המענה לאירועים, אך המטופל סיים את הטיפול בבטחה.";
+            } else if (state.score >= 60) {
+                starsCount = 3;
+                critique = "עברת את הטיפול. עם זאת, היו שגיאות בניהול בטיחות הסוכר או הלחץ בתא. מומלץ לחזור על הטיפול ולשים לב לשמירה על לחץ טיפולי של 2.0-2.4 ATA ולמניעת היפוגליקמיה.";
+            } else {
+                starsCount = 2;
+                critique = "הצלחת לסיים את הטיפול אך הניקוד נמוך מאוד. המטופל סבל מנזקי לחץ באוזניים או רמות סוכר לא יציבות. עליך לתרגל שוב כדי לרכוש את מיומנות הבטיחות הקריטית.";
+            }
+        }
+        
+        elements.finalAchievement.textContent = achievement;
+        elements.scoreCritique.textContent = critique;
+        
+        // Render Star ratings
+        elements.stars.forEach((star, index) => {
+            if (index < starsCount) {
+                star.classList.add('active');
+            } else {
+                star.classList.remove('active');
+            }
+        });
+    }
+
+    // --- RESTART GAME ---
+    elements.restartBtn.addEventListener('click', () => {
+        gameAudio.playClick();
+        
+        // Reset state
+        state.score = 0;
+        state.q1Answered = false;
+        state.scanComplete = false;
+        state.tcpo2Value = 0;
+        state.q2Answered = false;
+        state.sugarMeasured = false;
+        state.sugarValue = 112;
+        state.sugarCorrected = false;
+        state.q3Answered = false;
+        
+        // Reset UI components
+        elements.tcpo2Val.textContent = '--';
+        elements.tcpo2Explanation.classList.add('hidden');
+        elements.triageFeedback.classList.add('hidden');
+        elements.toPrepBtn.classList.add('hidden');
+        elements.scannerAction.classList.add('hidden');
+        elements.laserSensor.style.display = 'flex';
+        elements.laserSensor.style.left = '20px';
+        elements.laserSensor.style.top = '20px';
+        
+        elements.q1Options.forEach(btn => btn.className = 'option-btn');
+        elements.q2Options.forEach(btn => btn.className = 'option-btn');
+        elements.q3Options.forEach(btn => btn.className = 'patient-card-option');
+        
+        elements.prepQ1Section.classList.remove('hidden');
+        elements.prepQ2Section.classList.add('hidden');
+        elements.prepFeedback1.classList.add('hidden');
+        elements.prepFeedback2.classList.add('hidden');
+        elements.glucoActionArea.classList.add('hidden');
+        elements.glucoAlert.classList.remove('hidden');
+        elements.testSugarBtn.disabled = false;
+        elements.giveJuiceBtn.className = 'btn btn-accent';
+        elements.giveJuiceBtn.disabled = true;
+        elements.giveInsulinBtn.disabled = true;
+        elements.glucoVal.textContent = '---';
+        elements.glucoVal.style.color = '#00ffcc';
+        
+        // Go to Welcome screen
+        showScreen(elements.screenIntro);
+    });
+});
