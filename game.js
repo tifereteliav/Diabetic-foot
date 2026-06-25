@@ -50,6 +50,10 @@ document.addEventListener('DOMContentLoaded', () => {
         soundIconOff: document.getElementById('sound-icon-off'),
         
         // Screens
+        screenAuth: document.getElementById('screen-auth'),
+        authCodeInput: document.getElementById('auth-code-input'),
+        unlockBtn: document.getElementById('unlock-btn'),
+        authErrorMsg: document.getElementById('auth-error-msg'),
         screenIntro: document.getElementById('screen-intro'),
         screenTriage: document.getElementById('screen-triage'),
         screenPrep: document.getElementById('screen-prep'),
@@ -132,6 +136,36 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // --- ACCESS CODE VERIFICATION ---
+    function verifyAccessCode() {
+        const enteredCode = elements.authCodeInput.value.trim();
+        gameAudio.init(); // Initialize audio context on unlock gesture
+        
+        if (enteredCode === '3434') {
+            gameAudio.playSuccess();
+            elements.authErrorMsg.classList.add('hidden');
+            showScreen(elements.screenIntro);
+        } else {
+            gameAudio.playError();
+            elements.authErrorMsg.classList.remove('hidden');
+            elements.authCodeInput.classList.add('error-shake');
+            elements.authCodeInput.value = '';
+            
+            setTimeout(() => {
+                elements.authCodeInput.classList.remove('error-shake');
+            }, 400);
+        }
+    }
+
+    if (elements.unlockBtn && elements.authCodeInput) {
+        elements.unlockBtn.addEventListener('click', verifyAccessCode);
+        elements.authCodeInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                verifyAccessCode();
+            }
+        });
+    }
+
     // --- NAVIGATION HELPERS ---
     function updateScore(amount) {
         state.score += amount;
@@ -141,6 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function showScreen(screen) {
         // Hide all screens
+        if (elements.screenAuth) elements.screenAuth.classList.add('hidden');
         elements.screenIntro.classList.add('hidden');
         elements.screenTriage.classList.add('hidden');
         elements.screenPrep.classList.add('hidden');
@@ -151,8 +186,8 @@ document.addEventListener('DOMContentLoaded', () => {
         screen.classList.remove('hidden');
         
         // Update stage configuration
-        if (screen === elements.screenIntro) {
-            state.currentStage = 'intro';
+        if (screen === elements.screenIntro || screen === elements.screenAuth) {
+            state.currentStage = screen === elements.screenIntro ? 'intro' : 'auth';
             elements.gameHeader.classList.add('hidden');
         } else {
             elements.gameHeader.classList.remove('hidden');
