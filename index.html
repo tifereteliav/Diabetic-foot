@@ -166,14 +166,29 @@
                         
                         <div class="glucometer-tool">
                             <h5>מכשיר גלוקומטר (מד-סוכר)</h5>
-                            <div class="glucometer-display">
-                                <div class="gluco-screen">
-                                    <span class="gluco-status-lbl">גלוקוז</span>
-                                    <span id="gluco-val">---</span>
-                                    <span class="gluco-unit">mg/dL</span>
+                            <div class="glucometer-device">
+                                <div class="gluco-top-bar">
+                                    <span class="gluco-brand">GLUCO-GUARD v2.0</span>
+                                    <div class="gluco-battery">⚡</div>
+                                </div>
+                                <div class="gluco-screen-bezel">
+                                    <div class="gluco-screen">
+                                        <span class="gluco-status-lbl">GLUCOSE</span>
+                                        <div class="gluco-val-row">
+                                            <span id="gluco-val">---</span>
+                                            <span class="gluco-unit">mg/dL</span>
+                                        </div>
+                                        <span id="gluco-message" class="gluco-screen-msg">הכנס סטיק</span>
+                                    </div>
+                                </div>
+                                <div class="gluco-strip-port">
+                                    <div id="gluco-strip" class="gluco-strip">
+                                        <div class="gluco-strip-channels"></div>
+                                        <div id="gluco-blood-spot" class="gluco-blood-spot"></div>
+                                    </div>
                                 </div>
                             </div>
-                            <button id="test-sugar-btn" class="btn btn-accent btn-sm">מדוד סוכר ליוסי</button>
+                            <button id="test-sugar-btn" class="btn btn-accent btn-sm btn-block" style="margin-top: 10px; width: 100%;">מדוד סוכר ליוסי</button>
                         </div>
                     </div>
 

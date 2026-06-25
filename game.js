@@ -78,6 +78,9 @@ document.addEventListener('DOMContentLoaded', () => {
         q2Options: document.querySelectorAll('#q2-container .option-btn'),
         testSugarBtn: document.getElementById('test-sugar-btn'),
         glucoVal: document.getElementById('gluco-val'),
+        glucoMessage: document.getElementById('gluco-message'),
+        glucoStrip: document.getElementById('gluco-strip'),
+        glucoBloodSpot: document.getElementById('gluco-blood-spot'),
         glucoActionArea: document.getElementById('gluco-action-area'),
         glucoAlert: document.getElementById('gluco-alert'),
         giveJuiceBtn: document.getElementById('give-juice-btn'),
@@ -386,11 +389,60 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (opt !== btn) opt.style.opacity = '0.6';
             });
             
-            // Show Glucometer Section immediately regardless of choice
-            setTimeout(() => {
-                elements.glucoActionArea.classList.remove('hidden');
-            }, 800);
+            // Enable test button
+            elements.testSugarBtn.disabled = false;
         });
+    });
+
+    // Glucometer Blood sugar measurement simulation
+    elements.testSugarBtn.addEventListener('click', () => {
+        if (state.sugarMeasured) return;
+        
+        elements.testSugarBtn.disabled = true;
+        gameAudio.playBeep(800, 'sine', 0.1, 0.08);
+        
+        // Step 1: Slide strip down
+        elements.glucoMessage.textContent = "סטיק מוכנס...";
+        elements.glucoStrip.classList.add('inserted');
+        
+        // Step 2: Apply Blood
+        setTimeout(() => {
+            elements.glucoMessage.textContent = "הזן דם";
+            gameAudio.playBeep(900, 'sine', 0.15, 0.08);
+        }, 800);
+
+        // Step 3: Blood spot absorbs
+        setTimeout(() => {
+            elements.glucoBloodSpot.classList.add('active');
+            elements.glucoMessage.textContent = "בודק...";
+            gameAudio.playBeep(1000, 'sine', 0.1, 0.08);
+        }, 1800);
+
+        // Step 4: LCD analysis flashing countdown
+        let count = 0;
+        let scanInterval;
+        setTimeout(() => {
+            scanInterval = setInterval(() => {
+                elements.glucoVal.textContent = Math.floor(Math.random() * 200 + 40);
+                count++;
+                if (count > 8) {
+                    clearInterval(scanInterval);
+                    
+                    // Finalize low sugar measurement
+                    state.sugarMeasured = true;
+                    elements.glucoVal.textContent = state.sugarValue;
+                    elements.glucoVal.style.color = '#ff9f0a'; // warning orange
+                    elements.glucoMessage.textContent = "סוכר נמוך";
+                    
+                    gameAudio.playSuccess();
+                    
+                    // Reveal corrective action controls
+                    elements.glucoActionArea.classList.remove('hidden');
+                    elements.giveJuiceBtn.disabled = false;
+                    elements.giveInsulinBtn.disabled = false;
+                }
+            }, 120);
+        }, 2200);
     });
 
     // Glucometer actions
@@ -414,6 +466,7 @@ document.addEventListener('DOMContentLoaded', () => {
             elements.giveJuiceBtn.classList.add('selected');
             elements.glucoVal.textContent = state.sugarValue;
             elements.glucoVal.style.color = '#05ff7b'; // Safe green
+            elements.glucoMessage.textContent = "תקין";
             
             feedbackText.innerHTML = "נתת ליוסי פחמימות זמינות. רמת הסוכר עודכנה ל-<strong>178 mg/dL</strong>.";
         } else {
@@ -424,6 +477,7 @@ document.addEventListener('DOMContentLoaded', () => {
             elements.giveInsulinBtn.classList.add('selected');
             elements.glucoVal.textContent = state.sugarValue;
             elements.glucoVal.style.color = '#ff375f'; // Alarm red
+            elements.glucoMessage.textContent = "סכנה";
             
             feedbackText.innerHTML = "הזרקת ליוסי אינסולין. רמת הסוכר עודכנה ל-<strong>62 mg/dL</strong>.";
         }
@@ -820,12 +874,20 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.q3Options.forEach(btn => btn.className = 'patient-card-option');
         
         elements.prepQ1Section.classList.remove('hidden');
+        elements.prepQ1Section.classList.remove('hidden');
         elements.prepQ2Section.classList.add('hidden');
         elements.prepFeedback1.classList.add('hidden');
-        elements.prepFeedback2.classList.add('hidden');
         elements.glucoActionArea.classList.add('hidden');
         elements.glucoAlert.classList.remove('hidden');
-        elements.testSugarBtn.disabled = false;
+        
+        // Reset Glucometer device states
+        elements.glucoVal.textContent = '---';
+        elements.glucoVal.style.color = '';
+        elements.glucoMessage.textContent = 'הכנס סטיק';
+        elements.glucoStrip.classList.remove('inserted');
+        elements.glucoBloodSpot.classList.remove('active');
+        
+        elements.testSugarBtn.disabled = true; // initially disabled until Q2 answered
         elements.giveJuiceBtn.className = 'btn btn-accent';
         elements.giveJuiceBtn.disabled = true;
         elements.giveInsulinBtn.disabled = true;
