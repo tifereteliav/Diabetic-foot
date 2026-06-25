@@ -72,7 +72,6 @@ document.addEventListener('DOMContentLoaded', () => {
         scanFeedback: document.getElementById('scan-feedback'),
         tcpo2Val: document.getElementById('tcpo2-val'),
         tcpo2Explanation: document.getElementById('tcpo2-explanation'),
-        triageFeedback: document.getElementById('triage-feedback'),
         toPrepBtn: document.getElementById('to-prep-btn'),
         
         // Prep Screen
@@ -337,8 +336,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         מצב זה מנבא כי פוטנציאל הריפוי הספונטני נמוך, אך מעיד על <strong>התאמה מצוינת לטיפול בתא לחץ</strong>, אשר יציף את הרקמות בחמצן ויעודד ריפוי!
                     `;
                     elements.tcpo2Explanation.classList.remove('hidden');
-                    
-                    elements.triageFeedback.classList.remove('hidden');
                     elements.toPrepBtn.classList.remove('hidden');
                 }
             } else {
@@ -812,7 +809,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Reset UI components
         elements.tcpo2Val.textContent = '--';
         elements.tcpo2Explanation.classList.add('hidden');
-        elements.triageFeedback.classList.add('hidden');
         elements.toPrepBtn.classList.add('hidden');
         elements.scannerAction.classList.add('hidden');
         elements.laserSensor.style.display = 'flex';
