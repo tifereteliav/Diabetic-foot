@@ -7,6 +7,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- GAME STATE ---
     const state = {
         score: 0,
+        q1Score: 0,
+        q2Score: 0,
+        q3Score: 0,
+        sugarActionScore: 0,
         currentStage: 'intro',
         soundEnabled: false,
         
@@ -829,18 +833,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- STAGE 4: RESULTS & SUMMARY ---
-    function generateVerificationCode(score) {
-        // Obfuscate score: multiply by 17, add a fixed offset, convert to hex
-        const obfuscated = ((score * 17) + 2459).toString(16).toUpperCase();
-        // Add a random 4-char suffix for variety
-        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-        let randomPart = '';
-        for (let i = 0; i < 4; i++) {
-            randomPart += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        return `DF-${obfuscated}-${randomPart}`;
-    }
-
     function renderResults(completedSuccessfully) {
         let achievement = "";
         
@@ -852,12 +844,20 @@ document.addEventListener('DOMContentLoaded', () => {
         
         elements.finalAchievement.textContent = achievement;
         
-        // Calculate normalized score: Max background score is ~190
-        const maxExpectedScore = 190;
-        const normalizedScore = Math.min(100, Math.max(0, Math.round((state.score / maxExpectedScore) * 100)));
+        // Check if all questions were answered correctly:
+        // Q1 correct = 30 points
+        // Q2 correct = 30 points
+        // Q3 correct = 30 points
+        // Sugar action correct = 20 points
+        const allQuestionsCorrect = (state.q1Score === 30) && (state.q2Score === 30) && (state.q3Score === 30) && (state.sugarActionScore === 20);
         
-        // Generate obfuscated verification code
-        const code = generateVerificationCode(normalizedScore);
+        let code = "";
+        if (completedSuccessfully && allQuestionsCorrect) {
+            code = "Diabetic Foot 45";
+        } else {
+            code = "Diabetic Foot 67";
+        }
+        
         elements.verificationCode.textContent = code;
     }
 
@@ -883,6 +883,10 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Reset state
         state.score = 0;
+        state.q1Score = 0;
+        state.q2Score = 0;
+        state.q3Score = 0;
+        state.sugarActionScore = 0;
         state.q1Answered = false;
         state.scanComplete = false;
         state.tcpo2Value = 0;
