@@ -1523,3 +1523,27 @@ h1 {
         line-height: 1.3;
     }
 }
+
+/* Intake SVG Markers */
+.pulse-marker {
+    transition: all 0.2s ease;
+}
+.pulse-marker:hover {
+    fill: rgba(0, 210, 255, 0.4);
+    r: 9px;
+}
+.pulse-marker.selected {
+    fill: var(--accent-green) !important;
+    stroke: var(--accent-green) !important;
+    filter: drop-shadow(0 0 5px var(--accent-green-glow));
+}
+.pulse-marker.error {
+    fill: var(--danger-red) !important;
+    stroke: var(--danger-red) !important;
+    filter: drop-shadow(0 0 5px var(--danger-glow));
+}
+
+.patient-chat-bubble p {
+    color: var(--text-light) !important;
+}
+

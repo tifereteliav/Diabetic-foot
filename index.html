@@ -87,6 +87,114 @@
                 </div>
             </section>
 
+            <!-- NEW. CLINIC INTAKE / NURSING EXAM SCREEN -->
+            <section id="screen-intake" class="game-screen hidden">
+                <div class="screen-layout">
+                    <!-- Right: Patient Intake Console -->
+                    <div class="card intake-console text-right" style="width: 100%;">
+                        <div class="badge patient-badge">קבלה וסיעוד</div>
+                        
+                        <!-- Step 1: Scenario Introduction -->
+                        <div id="intake-step-intro">
+                            <h3>תלונת המטופל</h3>
+                            <div class="patient-chat-bubble" style="background-color: rgba(255,255,255,0.03); border: 1px dashed var(--card-border); padding: 15px; border-radius: 12px; margin-bottom: 20px;">
+                                <strong class="text-cyan">יוסי כהן (בן 62, סוכרתי):</strong>
+                                <p style="margin-top: 5px; font-size: 0.95rem;">"שלום אחות, הגעתי כי בזמן האחרון יש לי תחושה מוזרה ברגליים... כמו נמלים שזוחלות לי על כפות הרגליים, וקצת עקצוצים. אני לא מרגיש טוב את הרצפה כשאני הולך."</p>
+                            </div>
+                            <p class="instruction">עלינו לבצע בדיקה סיעודית מקיפה לכפות הרגליים של יוסי כדי להעריך נוירופתיה סוכרתית, זרימת דם ומצב עור ויזואלי.</p>
+                            <button id="intake-to-pulses-btn" class="btn btn-primary btn-lg" style="margin-top: 15px;">התחל בדיקת כף רגל</button>
+                        </div>
+
+                        <!-- Step 2: Pulse Check -->
+                        <div id="intake-step-pulses" class="hidden">
+                            <h3>שלב א': בדיקת דופק (Pedal Pulses)</h3>
+                            <p class="instruction">לפניך תרשים גב וצד כף הרגל. סמן את <strong>שתי הנקודות הנכונות</strong> שבהן בודקים דופק היקפי בכף הרגל:</p>
+                            
+                            <div class="pulse-check-container" style="position: relative; width: 100%; max-width: 300px; margin: 20px auto; text-align: center;">
+                                <!-- Foot Outline SVG with interactive pulse points -->
+                                <svg viewBox="0 0 100 120" width="100%" height="220" style="background: rgba(255,255,255,0.02); border: 1px solid var(--card-border); border-radius: 12px;">
+                                    <!-- Foot outline paths -->
+                                    <path d="M50 15 C35 15, 30 30, 32 60 C33 75, 25 80, 27 95 C29 105, 45 110, 50 110 C55 110, 71 105, 73 95 C75 80, 67 75, 68 60 C70 30, 65 15, 50 15 Z" fill="none" stroke="var(--primary)" stroke-width="2" opacity="0.6" />
+                                    <!-- Medial malleolus / inner ankle line (Posterior Tibial pulse helper) -->
+                                    <path d="M23 90 C23 95, 33 98, 33 90" fill="none" stroke="var(--cyan)" stroke-dasharray="2" />
+                                    
+                                    <!-- Interactive Markers -->
+                                    <!-- 1. Dorsalis Pedis (Correct - top center) -->
+                                    <circle cx="50" cy="55" r="8" class="pulse-marker" data-point="dp" fill="rgba(0, 210, 255, 0.2)" stroke="var(--primary)" stroke-width="2" style="cursor:pointer;" />
+                                    <text x="50" y="58" font-size="8" fill="var(--text-light)" text-anchor="middle" pointer-events="none">1</text>
+                                    
+                                    <!-- 2. Posterior Tibial (Correct - medial ankle) -->
+                                    <circle cx="34" cy="90" r="8" class="pulse-marker" data-point="pt" fill="rgba(0, 210, 255, 0.2)" stroke="var(--primary)" stroke-width="2" style="cursor:pointer;" />
+                                    <text x="34" y="93" font-size="8" fill="var(--text-light)" text-anchor="middle" pointer-events="none">2</text>
+                                    
+                                    <!-- 3. Incorrect Point A (Heel - plantar aspect) -->
+                                    <circle cx="50" cy="100" r="8" class="pulse-marker" data-point="heel" fill="rgba(0, 210, 255, 0.2)" stroke="var(--primary)" stroke-width="2" style="cursor:pointer;" />
+                                    <text x="50" y="103" font-size="8" fill="var(--text-light)" text-anchor="middle" pointer-events="none">3</text>
+                                    
+                                    <!-- 4. Incorrect Point B (Lateral border) -->
+                                    <circle cx="68" cy="75" r="8" class="pulse-marker" data-point="lateral" fill="rgba(0, 210, 255, 0.2)" stroke="var(--primary)" stroke-width="2" style="cursor:pointer;" />
+                                    <text x="68" y="78" font-size="8" fill="var(--text-light)" text-anchor="middle" pointer-events="none">4</text>
+                                </svg>
+                                <div class="pulse-legends" style="display:flex; justify-content:space-around; font-size:0.75rem; color:var(--text-muted-light); margin-top:8px;">
+                                    <span>1. גב הרגל</span>
+                                    <span>2. קרסול פנימי</span>
+                                    <span>3. עקב</span>
+                                    <span>4. צד חיצוני</span>
+                                </div>
+                            </div>
+                            
+                            <p id="pulse-feedback" class="text-center text-cyan small-text" style="min-height:20px;">בחר את שתי נקודות הדופק בכף הרגל.</p>
+                            <button id="intake-to-sensation-btn" class="btn btn-primary btn-lg hidden" style="margin-top: 15px; width: 100%;">המשך לבדיקת תחושה</button>
+                        </div>
+
+                        <!-- Step 3: Sensation Check -->
+                        <div id="intake-step-sensation" class="hidden">
+                            <h3>שלב ב': בדיקת תחושה מגן (Protective Sensation)</h3>
+                            <p class="instruction">באיזה מכשיר משתמשים כדי להעריך אובדן תחושה מגן המנבאת סיכון לכיב סוכרתי?</p>
+                            
+                            <div class="options-grid" style="margin: 20px 0;">
+                                <button class="sensation-opt-btn option-btn" data-opt="1">1. מד טמפרטורה דיגיטלי</button>
+                                <button class="sensation-opt-btn option-btn" data-opt="2" id="correct-sensation-tool">2. מונופילמנט 10 גרם (Monofilament)</button>
+                                <button class="sensation-opt-btn option-btn" data-opt="3">3. פטיש רפלקסים רגיל</button>
+                                <button class="sensation-opt-btn option-btn" data-opt="4">4. מד לחץ דם סיסטולי</button>
+                            </div>
+                            
+                            <button id="intake-to-deformities-btn" class="btn btn-primary btn-lg hidden" style="margin-top: 10px; width: 100%;">המשך לבדיקה ויזואלית</button>
+                        </div>
+
+                        <!-- Step 4: Deformities / Structural inspection -->
+                        <div id="intake-step-deformities" class="hidden">
+                            <h3>שלב ג': בדיקה ויזואלית ושינויים מבניים</h3>
+                            <p class="instruction">מה עוד חובה לבחון בבדיקה ויזואלית של כף הרגל הסוכרתית במטופל עם נוירופתיה?</p>
+                            
+                            <div class="options-grid" style="margin: 20px 0;">
+                                <button class="deformity-opt-btn option-btn" data-opt="1" id="correct-deformity-ans">1. עור יבש, סדקים, יבלות (Calluses) ועיוותים מבניים (כמו אצבעות פטיש או צורת שארקו)</button>
+                                <button class="deformity-opt-btn option-btn" data-opt="2">2. גובה הקשת האורכית בלבד וצבע הציפורניים בלבד</button>
+                                <button class="deformity-opt-btn option-btn" data-opt="3">3. שיעור יתר בגב כף הרגל בלבד</button>
+                                <button class="deformity-opt-btn option-btn" data-opt="4">4. גודל הנעל הרצויה בלבד</button>
+                            </div>
+                            
+                            <button id="intake-complete-btn" class="btn btn-accent btn-lg hidden" style="margin-top: 10px; width: 100%;">הצג תוצאות הבדיקה</button>
+                        </div>
+
+                        <!-- Step 5: Wound Discovered / Refer to HBOT -->
+                        <div id="intake-step-wound" class="hidden">
+                            <h3 class="text-red">⚠ ממצא חמור בבדיקה!</h3>
+                            <div style="background-color: rgba(255, 55, 95, 0.05); border: 2px solid var(--danger-red); padding: 15px; border-radius: 12px; margin: 15px 0;">
+                                <p style="font-size: 0.95rem; line-height: 1.5;">
+                                    בבדיקה הוויזואלית גילית <strong>יבלת עבה (Callus)</strong> תחת ראש המטטרסוס הראשון של יוסי. 
+                                    לאחר הסרה עדינה של שכבות העור הקרני, נחשף <strong>כיב נוירופתי עמוק בדרגה Wagner 3 (פצע סוכרתי עמוק עם חשד לאוסטאומיאליטיס)</strong>.
+                                </p>
+                                <p style="margin-top: 10px; font-weight: 700; color: var(--warning-orange);">
+                                    בשל איסכמיה יחסית ופוטנציאל ריפוי נמוך, יוסי מופנה בדחיפות להערכה וטיפול בחמצן היפרברי (תא לחץ) להצלת הגפה מקטיעה!
+                                </p>
+                            </div>
+                            <button id="intake-finish-go-to-hbot-btn" class="btn btn-accent btn-lg pulse-anim" style="margin-top: 15px; width: 100%;">המשך להערכה וטיפול בתא לחץ</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <!-- 2. DIAGNOSIS / TRIAGE SCREEN -->
             <section id="screen-triage" class="game-screen hidden">
                 <div class="screen-layout">

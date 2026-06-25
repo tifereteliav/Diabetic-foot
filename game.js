@@ -11,6 +11,9 @@ document.addEventListener('DOMContentLoaded', () => {
         q2Score: 0,
         q3Score: 0,
         sugarActionScore: 0,
+        intakeCorrect: true,
+        intakeSensationAnswered: false,
+        intakeDeformityAnswered: false,
         currentStage: 'intro',
         soundEnabled: false,
         
@@ -59,10 +62,27 @@ document.addEventListener('DOMContentLoaded', () => {
         unlockBtn: document.getElementById('unlock-btn'),
         authErrorMsg: document.getElementById('auth-error-msg'),
         screenIntro: document.getElementById('screen-intro'),
+        screenIntake: document.getElementById('screen-intake'),
         screenTriage: document.getElementById('screen-triage'),
         screenPrep: document.getElementById('screen-prep'),
         screenSimulator: document.getElementById('screen-simulator'),
         screenResults: document.getElementById('screen-results'),
+        
+        // Intake Selectors
+        intakeStepIntro: document.getElementById('intake-step-intro'),
+        intakeToPulsesBtn: document.getElementById('intake-to-pulses-btn'),
+        intakeStepPulses: document.getElementById('intake-step-pulses'),
+        pulseMarkers: document.querySelectorAll('.pulse-marker'),
+        pulseFeedback: document.getElementById('pulse-feedback'),
+        intakeToSensationBtn: document.getElementById('intake-to-sensation-btn'),
+        intakeStepSensation: document.getElementById('intake-step-sensation'),
+        sensationOptBtns: document.querySelectorAll('.sensation-opt-btn'),
+        intakeToDeformitiesBtn: document.getElementById('intake-to-deformities-btn'),
+        intakeStepDeformities: document.getElementById('intake-step-deformities'),
+        deformityOptBtns: document.querySelectorAll('.deformity-opt-btn'),
+        intakeCompleteBtn: document.getElementById('intake-complete-btn'),
+        intakeStepWound: document.getElementById('intake-step-wound'),
+        intakeFinishGoToHbotBtn: document.getElementById('intake-finish-go-to-hbot-btn'),
         
         // Interactive Controls
         startBtn: document.getElementById('start-btn'),
@@ -187,6 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Hide all screens
         if (elements.screenAuth) elements.screenAuth.classList.add('hidden');
         elements.screenIntro.classList.add('hidden');
+        elements.screenIntake.classList.add('hidden');
         elements.screenTriage.classList.add('hidden');
         elements.screenPrep.classList.add('hidden');
         elements.screenSimulator.classList.add('hidden');
@@ -201,7 +222,10 @@ document.addEventListener('DOMContentLoaded', () => {
             elements.gameHeader.classList.add('hidden');
         } else {
             elements.gameHeader.classList.remove('hidden');
-            if (screen === elements.screenTriage) {
+            if (screen === elements.screenIntake) {
+                state.currentStage = 'intake';
+                elements.stageTitle.textContent = 'קבלה ובדיקה סיעודית';
+            } else if (screen === elements.screenTriage) {
                 state.currentStage = 'triage';
                 elements.stageTitle.textContent = 'אבחון ומיון';
             } else if (screen === elements.screenPrep) {
@@ -245,6 +269,153 @@ document.addEventListener('DOMContentLoaded', () => {
         state.score = 0;
         updateScore(0);
         
+        showScreen(elements.screenIntake);
+        
+        // Show step intro, hide others
+        elements.intakeStepIntro.classList.remove('hidden');
+        elements.intakeStepPulses.classList.add('hidden');
+        elements.intakeStepSensation.classList.add('hidden');
+        elements.intakeStepDeformities.classList.add('hidden');
+        elements.intakeStepWound.classList.add('hidden');
+    });
+
+    // --- STAGE 0: CLINIC INTAKE & FOOT EXAMINATION ---
+    // Step 1 Intro -> Step 2 Pulses
+    elements.intakeToPulsesBtn.addEventListener('click', () => {
+        gameAudio.playClick();
+        elements.intakeStepIntro.classList.add('hidden');
+        elements.intakeStepPulses.classList.remove('hidden');
+    });
+
+    // Step 2 Pulse Markers Interaction
+    let selectedPulses = [];
+    elements.pulseMarkers.forEach(marker => {
+        marker.addEventListener('click', () => {
+            const point = marker.getAttribute('data-point');
+            
+            // Toggle selection
+            if (marker.classList.contains('selected') || marker.classList.contains('error')) {
+                marker.classList.remove('selected', 'error');
+                selectedPulses = selectedPulses.filter(p => p !== point);
+            } else {
+                if (point === 'dp' || point === 'pt') {
+                    marker.classList.add('selected');
+                } else {
+                    marker.classList.add('error');
+                    state.intakeCorrect = false;
+                    elements.pulseFeedback.textContent = "טעות! דופק היקפי נמדד בגב הרגל (1) או בקרסול הפנימי (2).";
+                    elements.pulseFeedback.style.color = 'var(--danger-red)';
+                    gameAudio.playError();
+                }
+                selectedPulses.push(point);
+            }
+            
+            gameAudio.playClick();
+            
+            // Check if both correct points are selected
+            const hasDP = selectedPulses.includes('dp');
+            const hasPT = selectedPulses.includes('pt');
+            const hasErrors = selectedPulses.includes('heel') || selectedPulses.includes('lateral');
+            
+            if (hasDP && hasPT && !hasErrors) {
+                elements.pulseFeedback.textContent = "מצוין! זיהית בהצלחה את שתי נקודות הדופק ההיקפי בכף הרגל.";
+                elements.pulseFeedback.style.color = 'var(--accent-green)';
+                elements.intakeToSensationBtn.classList.remove('hidden');
+                gameAudio.playSuccess();
+            } else if (hasDP && hasPT) {
+                elements.pulseFeedback.textContent = "זיהית את הדפקים, אך הסר את הסימונים השגויים כדי להמשיך.";
+                elements.pulseFeedback.style.color = 'var(--warning-orange)';
+                elements.intakeToSensationBtn.classList.add('hidden');
+            } else {
+                if (!hasErrors) {
+                    elements.pulseFeedback.textContent = "בחר את שתי נקודות הדופק בכף הרגל.";
+                    elements.pulseFeedback.style.color = 'var(--cyan)';
+                }
+                elements.intakeToSensationBtn.classList.add('hidden');
+            }
+        });
+    });
+
+    // Step 2 Pulses -> Step 3 Sensation
+    elements.intakeToSensationBtn.addEventListener('click', () => {
+        gameAudio.playClick();
+        elements.intakeStepPulses.classList.add('hidden');
+        elements.intakeStepSensation.classList.remove('hidden');
+    });
+
+    // Step 3 Sensation Tool Choice
+    elements.sensationOptBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (state.intakeSensationAnswered) return;
+            state.intakeSensationAnswered = true;
+            
+            const selectedOpt = btn.getAttribute('data-opt');
+            btn.classList.add('selected');
+            gameAudio.playClick();
+            
+            // Disable other options
+            elements.sensationOptBtns.forEach(opt => {
+                if (opt !== btn) opt.style.opacity = '0.6';
+            });
+            
+            if (selectedOpt !== '2') {
+                state.intakeCorrect = false;
+                gameAudio.playError();
+            } else {
+                gameAudio.playSuccess();
+            }
+            
+            setTimeout(() => {
+                elements.intakeToDeformitiesBtn.classList.remove('hidden');
+            }, 800);
+        });
+    });
+
+    // Step 3 Sensation -> Step 4 Deformities
+    elements.intakeToDeformitiesBtn.addEventListener('click', () => {
+        gameAudio.playClick();
+        elements.intakeStepSensation.classList.add('hidden');
+        elements.intakeStepDeformities.classList.remove('hidden');
+    });
+
+    // Step 4 Deformities Choice
+    elements.deformityOptBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (state.intakeDeformityAnswered) return;
+            state.intakeDeformityAnswered = true;
+            
+            const selectedOpt = btn.getAttribute('data-opt');
+            btn.classList.add('selected');
+            gameAudio.playClick();
+            
+            // Disable other options
+            elements.deformityOptBtns.forEach(opt => {
+                if (opt !== btn) opt.style.opacity = '0.6';
+            });
+            
+            if (selectedOpt !== '1') {
+                state.intakeCorrect = false;
+                gameAudio.playError();
+            } else {
+                gameAudio.playSuccess();
+            }
+            
+            setTimeout(() => {
+                elements.intakeCompleteBtn.classList.remove('hidden');
+            }, 800);
+        });
+    });
+
+    // Step 4 Deformities -> Step 5 Wound / Abort
+    elements.intakeCompleteBtn.addEventListener('click', () => {
+        gameAudio.playClick();
+        elements.intakeStepDeformities.classList.add('hidden');
+        elements.intakeStepWound.classList.remove('hidden');
+    });
+
+    // Step 5 Wound -> Stage 1 Triage
+    elements.intakeFinishGoToHbotBtn.addEventListener('click', () => {
+        gameAudio.playClick();
         showScreen(elements.screenTriage);
     });
 
@@ -849,7 +1020,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Q2 correct = 30 points
         // Q3 correct = 30 points
         // Sugar action correct = 20 points
-        const allQuestionsCorrect = (state.q1Score === 30) && (state.q2Score === 30) && (state.q3Score === 30) && (state.sugarActionScore === 20);
+        // Intake Correctness = state.intakeCorrect
+        const allQuestionsCorrect = (state.q1Score === 30) && (state.q2Score === 30) && (state.q3Score === 30) && (state.sugarActionScore === 20) && state.intakeCorrect;
         
         let code = "";
         if (completedSuccessfully && allQuestionsCorrect) {
@@ -887,6 +1059,9 @@ document.addEventListener('DOMContentLoaded', () => {
         state.q2Score = 0;
         state.q3Score = 0;
         state.sugarActionScore = 0;
+        state.intakeCorrect = true;
+        state.intakeSensationAnswered = false;
+        state.intakeDeformityAnswered = false;
         state.q1Answered = false;
         state.scanComplete = false;
         state.tcpo2Value = 0;
@@ -895,6 +1070,8 @@ document.addEventListener('DOMContentLoaded', () => {
         state.sugarValue = 112;
         state.sugarCorrected = false;
         state.q3Answered = false;
+        
+        selectedPulses = [];
         
         // Reset UI components
         elements.tcpo2Val.textContent = '--';
@@ -917,6 +1094,25 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.modalOverlay.classList.add('hidden');
         elements.glucoActionArea.classList.add('hidden');
         elements.glucoAlert.classList.remove('hidden');
+        
+        // Reset Intake UI components
+        elements.pulseMarkers.forEach(marker => {
+            marker.className = 'pulse-marker';
+        });
+        elements.pulseFeedback.textContent = "בחר את שתי נקודות הדופק בכף הרגל.";
+        elements.pulseFeedback.style.color = 'var(--cyan)';
+        elements.intakeToSensationBtn.classList.add('hidden');
+        elements.intakeToDeformitiesBtn.classList.add('hidden');
+        elements.intakeCompleteBtn.classList.add('hidden');
+        
+        elements.sensationOptBtns.forEach(btn => {
+            btn.className = 'sensation-opt-btn option-btn';
+            btn.style.opacity = '';
+        });
+        elements.deformityOptBtns.forEach(btn => {
+            btn.className = 'deformity-opt-btn option-btn';
+            btn.style.opacity = '';
+        });
         
         // Reset Glucometer device states
         elements.glucoVal.textContent = '---';
