@@ -92,6 +92,12 @@ document.addEventListener('DOMContentLoaded', () => {
         prepQ2Section: document.getElementById('prep-q2-section'),
         q3Options: document.querySelectorAll('#q3-container .patient-card-option'),
         toDiveBtn: document.getElementById('to-dive-btn'),
+        briefingOverlay: document.getElementById('briefing-overlay'),
+        startDiveConfirmBtn: document.getElementById('start-dive-confirm-btn'),
+        modalOverlay: document.getElementById('game-modal'),
+        modalTitle: document.getElementById('modal-title'),
+        modalText: document.getElementById('modal-text'),
+        modalCloseBtn: document.getElementById('modal-close-btn'),
         
         // Simulator Screen
         diveTimer: document.getElementById('dive-timer'),
@@ -206,6 +212,25 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     }
+
+    // --- CUSTOM GAME MODAL ---
+    let modalCallback = null;
+    function showGameModal(title, text, callback = null) {
+        elements.modalTitle.textContent = title;
+        elements.modalText.textContent = text;
+        elements.modalOverlay.classList.remove('hidden');
+        modalCallback = callback;
+    }
+
+    elements.modalCloseBtn.addEventListener('click', () => {
+        elements.modalOverlay.classList.add('hidden');
+        gameAudio.playClick();
+        if (modalCallback) {
+            const cb = modalCallback;
+            modalCallback = null;
+            cb();
+        }
+    });
 
     // --- GAME INTRO FLOW ---
     elements.startBtn.addEventListener('click', () => {
@@ -525,6 +550,12 @@ document.addEventListener('DOMContentLoaded', () => {
     elements.toDiveBtn.addEventListener('click', () => {
         gameAudio.playClick();
         showScreen(elements.screenSimulator);
+        elements.briefingOverlay.classList.remove('hidden');
+    });
+
+    elements.startDiveConfirmBtn.addEventListener('click', () => {
+        gameAudio.playClick();
+        elements.briefingOverlay.classList.add('hidden');
         startSimulation();
     });
 
@@ -693,11 +724,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (success) {
             gameAudio.playSuccess();
             updateScore(15);
-            alert("המטופל פימפם בהצלחה (שיטת ולסלבה) והשוואה את הלחצים באוזן התיכונה. הלחץ חזר לרמה נוחה.");
+            showGameModal("השוואת לחצים מוצלחת", "המטופל פימפם בהצלחה (שיטת ולסלבה) והשוואה את הלחצים באוזן התיכונה. הלחץ חזר לרמה נוחה.");
         } else {
             gameAudio.playError();
             updateScore(-15);
-            alert("לא הגבת בזמן. המטופל סבל מכאבי אוזניים עזים, מה שאילץ אותך להאט את קצב עליית הלחץ. נגרם נזק קל לעור התוף (Barotrauma).");
+            showGameModal("השוואת לחצים נכשלה", "לא הגבת בזמן. המטופל סבל מכאבי אוזניים עזים, מה שאילץ אותך להאט את קצב עליית הלחץ. נגרם נזק קל לעור התוף (Barotrauma).");
         }
     }
 
@@ -755,13 +786,14 @@ document.addEventListener('DOMContentLoaded', () => {
             elements.simSugar.textContent = `${state.sugarSimValue} mg/dL`;
             gameAudio.playSuccess();
             updateScore(25);
-            alert("מצוין! העברת לו גלוקוז נוזלי דרך שסתום האביזרים הייעודי של התא מבלי לפגוע בלחץ. המטופל שתה אותו, הסוכר עלה ל-115 mg/dL והוא התאושש במהירות.");
+            showGameModal("הטיפול בהיפוגליקמיה הצליח", "מצוין! העברת לו גלוקוז נוזלי דרך שסתום האביזרים הייעודי של התא מבלי לפגוע בלחץ. המטופל שתה אותו, הסוכר עלה ל-115 mg/dL והוא התאושש במהירות.");
         } else {
             // Patient faints
             gameAudio.playError();
             updateScore(-25);
-            alert("המטופל איבד את ההכרה עקב היפוגליקמיה קשה! חובה להפסיק טיפול מיידית ולבצע פריקת לחץ מהירה ומבוקרת לשליפת המטופל.");
-            endSimulation(false); // Immediate game failure / early end
+            showGameModal("איבוד הכרה!", "המטופל איבד את ההכרה עקב היפוגליקמיה קשה! חובה להפסיק טיפול מיידית ולבצע פריקת לחץ מהירה ומבוקרת לשליפת המטופל.", () => {
+                endSimulation(false); // Immediate game failure / early end
+            });
         }
     }
 
@@ -775,8 +807,9 @@ document.addEventListener('DOMContentLoaded', () => {
             elements.simEventPanel.classList.add('hidden');
             state.activeEvent = null;
             
-            alert("עצרת את הטיפול באופן חירום. המטופל פונה בבטחה להמשך עירוי גלוקוז בחוץ, אך הטיפול נקטע.");
-            endSimulation(false);
+            showGameModal("עצירת חירום", "עצרת את הטיפול באופן חירום. המטופל פונה בבטחה להמשך עירוי גלוקוז בחוץ, אך הטיפול נקטע.", () => {
+                endSimulation(false);
+            });
         }
     });
 
@@ -876,6 +909,8 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.prepQ2Section.classList.add('hidden');
         elements.prepFeedback1.classList.add('hidden');
         elements.toDiveBtn.classList.add('hidden');
+        elements.briefingOverlay.classList.remove('hidden');
+        elements.modalOverlay.classList.add('hidden');
         elements.glucoActionArea.classList.add('hidden');
         elements.glucoAlert.classList.remove('hidden');
         

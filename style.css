@@ -329,27 +329,30 @@ h1 {
 
 .stats-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
 }
 
 .stat-box {
     background-color: rgba(255, 255, 255, 0.03);
     border: 1px solid var(--card-border);
-    padding: 8px 12px;
+    padding: 6px 8px;
     border-radius: 10px;
     display: flex;
     flex-direction: column;
+    align-items: center;
+    text-align: center;
 }
 
 .stat-label {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: var(--text-muted);
-    margin-bottom: 4px;
+    margin-bottom: 2px;
+    white-space: nowrap;
 }
 
 .stat-value {
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 700;
 }
 
@@ -1298,4 +1301,225 @@ h1 {
     color: var(--cyan);
     letter-spacing: 2px;
     text-shadow: 0 0 10px var(--primary-glow);
+}
+
+/* Custom Modal Styles */
+.modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(5, 6, 11, 0.85);
+    backdrop-filter: blur(5px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.modal-card {
+    background-color: var(--card-bg);
+    border: 2px solid var(--card-border);
+    border-radius: 20px;
+    padding: 24px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 0 20px var(--primary-glow);
+    text-align: center;
+    direction: rtl;
+    animation: modalScaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modalScaleIn {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.modal-card h3 {
+    font-size: 1.25rem;
+    color: var(--primary);
+    margin-bottom: 12px;
+    font-weight: 700;
+}
+
+.modal-card p {
+    font-size: 0.95rem;
+    color: var(--text-light);
+    margin-bottom: 20px;
+    line-height: 1.6;
+}
+
+/* Briefing Overlay */
+.briefing-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(5, 6, 11, 0.95);
+    z-index: 50;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 16px;
+    box-sizing: border-box;
+}
+
+.briefing-card {
+    background-color: var(--card-bg);
+    border: 2px solid var(--primary);
+    border-radius: 20px;
+    padding: 20px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 0 25px var(--primary-glow);
+    text-align: center;
+    direction: rtl;
+}
+
+.briefing-icon {
+    font-size: 2rem;
+    margin-bottom: 8px;
+}
+
+.briefing-card h3 {
+    font-size: 1.2rem;
+    color: var(--primary);
+    margin-bottom: 4px;
+    font-weight: 700;
+}
+
+.briefing-subtitle {
+    font-size: 0.85rem;
+    color: var(--text-muted-light);
+    margin-bottom: 16px;
+}
+
+.briefing-steps {
+    text-align: right;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.briefing-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.step-num {
+    background-color: rgba(0, 210, 255, 0.15);
+    color: var(--primary);
+    border: 1px solid var(--primary);
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.briefing-step p {
+    font-size: 0.85rem;
+    color: var(--text-light);
+    line-height: 1.4;
+    margin: 0;
+}
+
+/* Mobile Simulator Responsiveness */
+@media (max-height: 820px), (max-width: 480px) {
+    .simulator-layout {
+        gap: 8px;
+    }
+    .simulator-layout .card {
+        padding: 10px;
+        margin-bottom: 0px;
+    }
+    .chamber-visualization {
+        height: 70px;
+        margin-bottom: 8px;
+    }
+    .chamber-tube {
+        height: 60px;
+    }
+    .chamber-tube svg {
+        width: 70px;
+        height: 70px;
+    }
+    .stats-grid {
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 6px;
+    }
+    .stat-box {
+        padding: 4px 6px;
+        border-radius: 8px;
+        align-items: center;
+    }
+    .stat-label {
+        font-size: 0.62rem;
+        margin-bottom: 1px;
+        text-align: center;
+        white-space: nowrap;
+    }
+    .stat-value {
+        font-size: 0.9rem;
+    }
+    
+    .sim-controls h4 {
+        font-size: 0.95rem;
+        margin-bottom: 2px;
+    }
+    .control-desc {
+        font-size: 0.72rem;
+        margin-bottom: 6px;
+        line-height: 1.25;
+    }
+    .gauge-container {
+        margin: 4px 0;
+    }
+    .pressure-gauge-visual {
+        width: 120px;
+        height: 65px;
+        border-radius: 65px 65px 0 0;
+    }
+    .gauge-needle {
+        height: 52px;
+    }
+    .slider-control {
+        margin-top: 6px;
+    }
+    .slider-label {
+        font-size: 0.72rem;
+        margin-bottom: 2px;
+    }
+    .styled-slider {
+        height: 6px;
+    }
+    .styled-slider::-webkit-slider-thumb {
+        width: 18px;
+        height: 18px;
+    }
+    
+    .event-panel-card {
+        padding: 8px;
+        margin-top: 8px;
+    }
+    .event-header-box {
+        font-size: 0.85rem;
+        margin-bottom: 4px;
+    }
+    #event-desc {
+        font-size: 0.72rem;
+        margin-bottom: 8px;
+        line-height: 1.3;
+    }
 }

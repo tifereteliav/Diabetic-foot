@@ -262,6 +262,32 @@
 
             <!-- 4. SIMULATOR / THE DIVE SCREEN -->
             <section id="screen-simulator" class="game-screen hidden">
+                <!-- Pre-Dive Briefing Overlay -->
+                <div id="briefing-overlay" class="briefing-overlay">
+                    <div class="briefing-card">
+                        <div class="briefing-icon">📋</div>
+                        <h3>תדריך פרוטוקול צלילה</h3>
+                        <p class="briefing-subtitle">עליך לנהל את הטיפול בתא הלחץ עבור המטופל יוסי</p>
+                        
+                        <div class="briefing-steps">
+                            <div class="briefing-step">
+                                <span class="step-num">1</span>
+                                <p><strong>העלאת לחץ:</strong> גרור את הסליידר כדי להעלות את הלחץ לטווח הטיפולי המסומן בירוק (<strong>2.0 - 2.4 ATA</strong>).</p>
+                            </div>
+                            <div class="briefing-step">
+                                <span class="step-num">2</span>
+                                <p><strong>שמירה על יציבות:</strong> שמור על המחוג בטווח הירוק. סטייה למטה תפגע ביעילות הטיפול, וסטייה למעלה מסוכנת!</p>
+                            </div>
+                            <div class="briefing-step">
+                                <span class="step-num">3</span>
+                                <p><strong>אירועי חירום:</strong> שים לב להתראות המטופל. אם יופיע אירוע חירום (כאב אוזניים או נפילת סוכר), פעל מיד לפי כפתורי הבקרה שיפתחו.</p>
+                            </div>
+                        </div>
+                        
+                        <button id="start-dive-confirm-btn" class="btn btn-accent btn-lg pulse-anim">התחל טיפול (צלילה)</button>
+                    </div>
+                </div>
+
                 <div class="simulator-layout">
                     <!-- Simulator Dashboard -->
                     <div class="sim-dashboard card">
@@ -294,11 +320,11 @@
                                 <span class="stat-value text-cyan" id="sim-o2">100%</span>
                             </div>
                             <div class="stat-box">
-                                <span class="stat-label">סוכר בדם (משוער)</span>
+                                <span class="stat-label">סוכר בדם</span>
                                 <span class="stat-value" id="sim-sugar">178 mg/dL</span>
                             </div>
                             <div class="stat-box">
-                                <span class="stat-label">לחץ בתא (ATA)</span>
+                                <span class="stat-label">לחץ בתא</span>
                                 <span class="stat-value text-green" id="sim-pressure">1.0 ATA</span>
                             </div>
                         </div>
@@ -407,6 +433,15 @@
             </section>
 
         </main>
+
+        <!-- Custom Game Modal -->
+        <div id="game-modal" class="modal-overlay hidden">
+            <div class="modal-card">
+                <h3 id="modal-title">כותרת הודעה</h3>
+                <p id="modal-text">תוכן ההודעה כאן...</p>
+                <button id="modal-close-btn" class="btn btn-primary">הבנתי, המשך</button>
+            </div>
+        </div>
     </div>
 
     <!-- Scripts -->
