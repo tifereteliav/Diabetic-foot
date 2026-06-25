@@ -91,7 +91,6 @@ document.addEventListener('DOMContentLoaded', () => {
         prepQ1Section: document.getElementById('prep-q1-section'),
         prepQ2Section: document.getElementById('prep-q2-section'),
         q3Options: document.querySelectorAll('#q3-container .patient-card-option'),
-        prepFeedback2: document.getElementById('prep-feedback-2'),
         toDiveBtn: document.getElementById('to-dive-btn'),
         
         // Simulator Screen
@@ -874,9 +873,9 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.q3Options.forEach(btn => btn.className = 'patient-card-option');
         
         elements.prepQ1Section.classList.remove('hidden');
-        elements.prepQ1Section.classList.remove('hidden');
         elements.prepQ2Section.classList.add('hidden');
         elements.prepFeedback1.classList.add('hidden');
+        elements.toDiveBtn.classList.add('hidden');
         elements.glucoActionArea.classList.add('hidden');
         elements.glucoAlert.classList.remove('hidden');
         
