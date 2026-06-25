@@ -1524,23 +1524,63 @@ h1 {
     }
 }
 
-/* Intake SVG Markers */
-.pulse-marker {
-    transition: all 0.2s ease;
+/* Pulse Hotspots on tibialis.png */
+.pulse-hotspot {
+    background: none;
+    border: none;
+    width: 36px;
+    height: 36px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    outline: none;
+    position: relative;
 }
-.pulse-marker:hover {
-    fill: rgba(0, 210, 255, 0.4);
-    r: 9px;
+
+.hotspot-dot {
+    width: 12px;
+    height: 12px;
+    background-color: var(--primary);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--primary-glow);
+    transition: background-color 0.3s;
+    z-index: 2;
 }
-.pulse-marker.selected {
-    fill: var(--accent-green) !important;
-    stroke: var(--accent-green) !important;
-    filter: drop-shadow(0 0 5px var(--accent-green-glow));
+
+.hotspot-ring {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    border: 3px solid var(--primary);
+    border-radius: 50%;
+    animation: ripple 1.6s infinite ease-out;
+    opacity: 0.6;
+    z-index: 1;
+    pointer-events: none;
 }
-.pulse-marker.error {
-    fill: var(--danger-red) !important;
-    stroke: var(--danger-red) !important;
-    filter: drop-shadow(0 0 5px var(--danger-glow));
+
+@keyframes ripple {
+    0% {
+        transform: scale(0.5);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1.5);
+        opacity: 0;
+    }
+}
+
+.pulse-hotspot.checked .hotspot-dot {
+    background-color: var(--accent-green);
+    box-shadow: 0 0 10px var(--accent-green-glow);
+}
+
+.pulse-hotspot.checked .hotspot-ring {
+    border-color: var(--accent-green);
+    animation: none;
+    transform: scale(1);
+    opacity: 0.8;
 }
 
 .patient-chat-bubble p {

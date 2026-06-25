@@ -110,36 +110,25 @@
                             <h3>שלב א': בדיקת דופק (Pedal Pulses)</h3>
                             <p class="instruction">לפניך תרשים גב וצד כף הרגל. סמן את <strong>שתי הנקודות הנכונות</strong> שבהן בודקים דופק היקפי בכף הרגל:</p>
                             
-                            <div class="pulse-check-container" style="position: relative; width: 100%; max-width: 300px; margin: 20px auto; text-align: center;">
-                                <!-- Foot Outline SVG with interactive pulse points -->
-                                <svg viewBox="0 0 100 120" width="100%" height="220" style="background: rgba(255,255,255,0.02); border: 1px solid var(--card-border); border-radius: 12px;">
-                                    <!-- Foot outline paths -->
-                                    <path d="M50 15 C35 15, 30 30, 32 60 C33 75, 25 80, 27 95 C29 105, 45 110, 50 110 C55 110, 71 105, 73 95 C75 80, 67 75, 68 60 C70 30, 65 15, 50 15 Z" fill="none" stroke="var(--primary)" stroke-width="2" opacity="0.6" />
-                                    <!-- Medial malleolus / inner ankle line (Posterior Tibial pulse helper) -->
-                                    <path d="M23 90 C23 95, 33 98, 33 90" fill="none" stroke="var(--cyan)" stroke-dasharray="2" />
-                                    
-                                    <!-- Interactive Markers -->
-                                    <!-- 1. Dorsalis Pedis (Correct - top center) -->
-                                    <circle cx="50" cy="55" r="8" class="pulse-marker" data-point="dp" fill="rgba(0, 210, 255, 0.2)" stroke="var(--primary)" stroke-width="2" style="cursor:pointer;" />
-                                    <text x="50" y="58" font-size="8" fill="var(--text-light)" text-anchor="middle" pointer-events="none">1</text>
-                                    
-                                    <!-- 2. Posterior Tibial (Correct - medial ankle) -->
-                                    <circle cx="34" cy="90" r="8" class="pulse-marker" data-point="pt" fill="rgba(0, 210, 255, 0.2)" stroke="var(--primary)" stroke-width="2" style="cursor:pointer;" />
-                                    <text x="34" y="93" font-size="8" fill="var(--text-light)" text-anchor="middle" pointer-events="none">2</text>
-                                    
-                                    <!-- 3. Incorrect Point A (Heel - plantar aspect) -->
-                                    <circle cx="50" cy="100" r="8" class="pulse-marker" data-point="heel" fill="rgba(0, 210, 255, 0.2)" stroke="var(--primary)" stroke-width="2" style="cursor:pointer;" />
-                                    <text x="50" y="103" font-size="8" fill="var(--text-light)" text-anchor="middle" pointer-events="none">3</text>
-                                    
-                                    <!-- 4. Incorrect Point B (Lateral border) -->
-                                    <circle cx="68" cy="75" r="8" class="pulse-marker" data-point="lateral" fill="rgba(0, 210, 255, 0.2)" stroke="var(--primary)" stroke-width="2" style="cursor:pointer;" />
-                                    <text x="68" y="78" font-size="8" fill="var(--text-light)" text-anchor="middle" pointer-events="none">4</text>
-                                </svg>
-                                <div class="pulse-legends" style="display:flex; justify-content:space-around; font-size:0.75rem; color:var(--text-muted-light); margin-top:8px;">
-                                    <span>1. גב הרגל</span>
-                                    <span>2. קרסול פנימי</span>
-                                    <span>3. עקב</span>
-                                    <span>4. צד חיצוני</span>
+                            <div class="pulse-check-container" style="position: relative; width: 100%; max-width: 320px; margin: 20px auto; text-align: center;">
+                                <img src="tibialis.png" alt="מיקומי דופק בכף רגל" style="width: 100%; border: 1px solid var(--card-border); border-radius: 12px; display: block; opacity: 0.9;" />
+                                
+                                <!-- Hotspot 1: Dorsalis Pedis (דופק דורסאלי) -->
+                                <div style="position: absolute; top: 40%; left: 55%; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; z-index: 10;">
+                                    <button type="button" class="pulse-hotspot" data-pulse="dp" title="דופק דורסאלי (Dorsalis Pedis)">
+                                        <span class="hotspot-ring"></span>
+                                        <span class="hotspot-dot"></span>
+                                    </button>
+                                    <span style="font-size: 0.65rem; background-color: rgba(5,6,11,0.8); border: 1px solid var(--card-border); padding: 2px 4px; border-radius: 4px; margin-top: 2px; white-space: nowrap;">דופק דורסאלי</span>
+                                </div>
+                                
+                                <!-- Hotspot 2: Posterior Tibial (דופק טיביאלי) -->
+                                <div style="position: absolute; top: 72%; left: 26%; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; z-index: 10;">
+                                    <button type="button" class="pulse-hotspot" data-pulse="pt" title="דופק טיביאלי אחורי (Posterior Tibial)">
+                                        <span class="hotspot-ring"></span>
+                                        <span class="hotspot-dot"></span>
+                                    </button>
+                                    <span style="font-size: 0.65rem; background-color: rgba(5,6,11,0.8); border: 1px solid var(--card-border); padding: 2px 4px; border-radius: 4px; margin-top: 2px; white-space: nowrap;">דופק טיביאלי</span>
                                 </div>
                             </div>
                             

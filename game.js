@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
         intakeCorrect: true,
         intakeSensationAnswered: false,
         intakeDeformityAnswered: false,
+        clickedPulses: { dp: false, pt: false },
         currentStage: 'intro',
         soundEnabled: false,
         
@@ -72,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
         intakeStepIntro: document.getElementById('intake-step-intro'),
         intakeToPulsesBtn: document.getElementById('intake-to-pulses-btn'),
         intakeStepPulses: document.getElementById('intake-step-pulses'),
-        pulseMarkers: document.querySelectorAll('.pulse-marker'),
+        pulseHotspots: document.querySelectorAll('.pulse-hotspot'),
         pulseFeedback: document.getElementById('pulse-feedback'),
         intakeToSensationBtn: document.getElementById('intake-to-sensation-btn'),
         intakeStepSensation: document.getElementById('intake-step-sensation'),
@@ -287,51 +288,27 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.intakeStepPulses.classList.remove('hidden');
     });
 
-    // Step 2 Pulse Markers Interaction
-    let selectedPulses = [];
-    elements.pulseMarkers.forEach(marker => {
-        marker.addEventListener('click', () => {
-            const point = marker.getAttribute('data-point');
+    // Step 2 Pulse Hotspots Interaction
+    elements.pulseHotspots.forEach(hotspot => {
+        hotspot.addEventListener('click', () => {
+            const pulseType = hotspot.getAttribute('data-pulse');
+            state.clickedPulses[pulseType] = true;
             
-            // Toggle selection
-            if (marker.classList.contains('selected') || marker.classList.contains('error')) {
-                marker.classList.remove('selected', 'error');
-                selectedPulses = selectedPulses.filter(p => p !== point);
-            } else {
-                if (point === 'dp' || point === 'pt') {
-                    marker.classList.add('selected');
-                } else {
-                    marker.classList.add('error');
-                    state.intakeCorrect = false;
-                    elements.pulseFeedback.textContent = "טעות! דופק היקפי נמדד בגב הרגל (1) או בקרסול הפנימי (2).";
-                    elements.pulseFeedback.style.color = 'var(--danger-red)';
-                    gameAudio.playError();
-                }
-                selectedPulses.push(point);
-            }
-            
+            hotspot.classList.add('checked');
             gameAudio.playClick();
             
-            // Check if both correct points are selected
-            const hasDP = selectedPulses.includes('dp');
-            const hasPT = selectedPulses.includes('pt');
-            const hasErrors = selectedPulses.includes('heel') || selectedPulses.includes('lateral');
-            
-            if (hasDP && hasPT && !hasErrors) {
-                elements.pulseFeedback.textContent = "מצוין! זיהית בהצלחה את שתי נקודות הדופק ההיקפי בכף הרגל.";
+            if (pulseType === 'dp') {
+                elements.pulseFeedback.textContent = "דופק דורסאלי (גב הרגל): נמוש, סדיר ובעוצמה תקינה (+2)";
                 elements.pulseFeedback.style.color = 'var(--accent-green)';
+            } else if (pulseType === 'pt') {
+                elements.pulseFeedback.textContent = "דופק טיביאלי (קרסול פנימי): נמוש, סדיר ובעוצמה תקינה (+2)";
+                elements.pulseFeedback.style.color = 'var(--accent-green)';
+            }
+            
+            // Check if both are clicked
+            if (state.clickedPulses.dp && state.clickedPulses.pt) {
                 elements.intakeToSensationBtn.classList.remove('hidden');
                 gameAudio.playSuccess();
-            } else if (hasDP && hasPT) {
-                elements.pulseFeedback.textContent = "זיהית את הדפקים, אך הסר את הסימונים השגויים כדי להמשיך.";
-                elements.pulseFeedback.style.color = 'var(--warning-orange)';
-                elements.intakeToSensationBtn.classList.add('hidden');
-            } else {
-                if (!hasErrors) {
-                    elements.pulseFeedback.textContent = "בחר את שתי נקודות הדופק בכף הרגל.";
-                    elements.pulseFeedback.style.color = 'var(--cyan)';
-                }
-                elements.intakeToSensationBtn.classList.add('hidden');
             }
         });
     });
@@ -1096,14 +1073,17 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.glucoAlert.classList.remove('hidden');
         
         // Reset Intake UI components
-        elements.pulseMarkers.forEach(marker => {
-            marker.className = 'pulse-marker';
+        elements.pulseHotspots.forEach(hotspot => {
+            hotspot.className = 'pulse-hotspot';
         });
-        elements.pulseFeedback.textContent = "בחר את שתי נקודות הדופק בכף הרגל.";
+        elements.pulseFeedback.textContent = "לחץ על שתי נקודות הדופק בכף הרגל כדי לבדוק.";
         elements.pulseFeedback.style.color = 'var(--cyan)';
         elements.intakeToSensationBtn.classList.add('hidden');
         elements.intakeToDeformitiesBtn.classList.add('hidden');
         elements.intakeCompleteBtn.classList.add('hidden');
+        
+        state.clickedPulses.dp = false;
+        state.clickedPulses.pt = false;
         
         elements.sensationOptBtns.forEach(btn => {
             btn.className = 'sensation-opt-btn option-btn';
