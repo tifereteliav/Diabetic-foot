@@ -129,20 +129,8 @@
                             <div class="scanner-instruction">גררו את חיישן הלייזר מעל הפצע כדי למדוד את רמת הלחץ החלקי של החמצן ברקמה (TcPO2):</div>
                             
                             <div class="scanner-zone">
-                                <svg class="foot-diagram" viewBox="0 0 200 250" width="180" height="220">
-                                    <!-- Foot Outline -->
-                                    <path d="M100 20 C70 30, 45 60, 45 110 C45 160, 65 200, 75 220 C85 230, 115 230, 125 220 C135 200, 155 160, 155 110 C155 60, 130 30, 100 20 Z" fill="#3a405a" stroke="#687099" stroke-width="2" />
-                                    <!-- Toes -->
-                                    <circle cx="100" cy="18" r="14" fill="#3a405a" stroke="#687099" stroke-width="2" />
-                                    <circle cx="78" cy="24" r="10" fill="#3a405a" stroke="#687099" stroke-width="2" />
-                                    <circle cx="60" cy="35" r="8" fill="#3a405a" stroke="#687099" stroke-width="2" />
-                                    <circle cx="122" cy="24" r="10" fill="#3a405a" stroke="#687099" stroke-width="2" />
-                                    <circle cx="140" cy="35" r="8" fill="#3a405a" stroke="#687099" stroke-width="2" />
-                                    
-                                    <!-- Wound Area -->
-                                    <path id="foot-wound" d="M90 120 C80 125, 85 145, 100 145 C115 145, 120 125, 110 120 Z" fill="#8b263e" stroke="#c93b5d" stroke-width="2" />
-                                    <circle cx="100" cy="133" r="5" fill="#f49cbb" opacity="0.8" />
-                                </svg>
+                                <img src="foot.png" alt="כף רגל סוכרתית" class="foot-photo" />
+                                <div id="foot-wound" class="wound-target"></div>
                                 
                                 <div id="laser-sensor" class="draggable-sensor" draggable="true">
                                     <span class="sensor-glow"></span>
@@ -222,11 +210,9 @@
                                 </div>
                             </div>
 
-                            <div id="prep-feedback-1" class="feedback-card hidden">
-                                <div class="feedback-icon text-green">✓</div>
-                                <div class="feedback-text">
-                                    <strong>מצוין!</strong> נתת ליוסי פחמימות זמינות. מדד הסוכר שלו עלה כעת ל-<strong>178 mg/dL</strong>, שהוא בתוך טווח היעד הבטוח (150-250 mg/dL). כעת הוא מוגן יותר מהיפו במהלך הטיפול.
-                                </div>
+                            <div id="prep-feedback-1" class="feedback-card hidden" style="background-color: rgba(255,255,255,0.03); border-color: var(--card-border);">
+                                <div id="prep-feedback-1-icon" class="feedback-icon text-cyan">ℹ</div>
+                                <div id="prep-feedback-1-text" class="feedback-text">הפעולה בוצעה. רמת הסוכר עודכנה.</div>
                                 <button id="to-prep-part2-btn" class="btn btn-primary">המשך להערכת סיכונים נוספת</button>
                             </div>
                         </div>
@@ -371,49 +357,33 @@
                     <h1>עבודה מדהימה!</h1>
                     <p class="subtitle" id="final-achievement">סיימת את הטיפול בהצלחה!</p>
                     
-                    <div class="card score-card">
-                        <div class="rating-stars" id="star-rating">
-                            <span class="star">★</span>
-                            <span class="star">★</span>
-                            <span class="star">★</span>
-                            <span class="star">★</span>
-                            <span class="star">★</span>
+                    <div class="card code-card">
+                        <h3>האתגר הושלם בהצלחה!</h3>
+                        <p class="instruction">הציגו קוד זה למארגני הכנס כדי להיכנס להגרלה על שוברים כספיים:</p>
+                        <div class="verification-code-box">
+                            <strong id="verification-code">DF-XXXX-XXXX</strong>
                         </div>
-                        <div class="score-breakdown">
-                            <p>ניקוד סופי: <strong id="final-score">100</strong> מתוך 100</p>
-                            <p id="score-critique">ניהלת את בטיחות המטופל ואת תא הלחץ בצורה מושלמת ומנעת קטיעה של הרגל!</p>
-                        </div>
+                        <button id="copy-code-btn" class="btn btn-accent btn-sm" style="margin-top: 10px; width: 100%;">העתק קוד אימות</button>
                     </div>
 
                     <!-- Healing progression foot animation -->
                     <div class="healing-animation-container card">
-                        <h4>הדמיית ריפוי הפצע לאורך זמן</h4>
+                        <h4>שלבי ריפוי הפצע בעקבות הטיפול</h4>
                         <p class="small-text">חמצן היפרברי בלחץ של 2.0-2.4 ATA ממיס חמצן ישירות בפלזמה, מעודד אנגיוגנזה (צמיחת כלי דם חדשים) וקולגן ומאיץ ריפוי:</p>
                         <div class="healing-stages">
                             <div class="stage-foot-wrapper">
-                                <svg class="foot-stage-svg" viewBox="0 0 200 250" width="80" height="100">
-                                    <path d="M100 20 C70 30, 45 60, 45 110 C45 160, 65 200, 75 220 C85 230, 115 230, 125 220 C135 200, 155 160, 155 110 C155 60, 130 30, 100 20 Z" fill="#3a405a" stroke="#687099" stroke-width="2" />
-                                    <path d="M90 120 C80 125, 85 145, 100 145 C115 145, 120 125, 110 120 Z" fill="#8b263e" stroke="#c93b5d" stroke-width="2" />
-                                </svg>
-                                <span class="stage-label">לפני</span>
+                                <div class="stage-badge badge patient-badge" style="margin-bottom:4px;">פצע פעיל</div>
+                                <p class="small-text" style="font-size:0.75rem;">איסכמיה מקומית המעכבת ריפוי</p>
                             </div>
                             <div class="stage-arrow">➔</div>
                             <div class="stage-foot-wrapper">
-                                <svg class="foot-stage-svg" viewBox="0 0 200 250" width="80" height="100">
-                                    <path d="M100 20 C70 30, 45 60, 45 110 C45 160, 65 200, 75 220 C85 230, 115 230, 125 220 C135 200, 155 160, 155 110 C155 60, 130 30, 100 20 Z" fill="#3a405a" stroke="#687099" stroke-width="2" />
-                                    <!-- Wound is smaller and lighter -->
-                                    <path d="M93 124 C86 127, 89 138, 100 138 C111 138, 114 127, 107 124 Z" fill="#a8435d" stroke="#c95b77" stroke-width="2" />
-                                </svg>
-                                <span class="stage-label">טיפול 10</span>
+                                <div class="stage-badge badge safety-badge" style="margin-bottom:4px;">צמיחת כלי דם</div>
+                                <p class="small-text" style="font-size:0.75rem;">יצירת כלי דם ורקמת חיבור חדשה</p>
                             </div>
                             <div class="stage-arrow">➔</div>
                             <div class="stage-foot-wrapper">
-                                <svg class="foot-stage-svg animate-heal" viewBox="0 0 200 250" width="80" height="100">
-                                    <path d="M100 20 C70 30, 45 60, 45 110 C45 160, 65 200, 75 220 C85 230, 115 230, 125 220 C135 200, 155 160, 155 110 C155 60, 130 30, 100 20 Z" fill="#3a405a" stroke="#687099" stroke-width="2" />
-                                    <!-- Wound is fully healed / small scar skin color -->
-                                    <path d="M98 129 C96 130, 96 134, 100 134 C104 134, 104 130, 102 129 Z" fill="#c0a9b0" opacity="0.6" />
-                                </svg>
-                                <span class="stage-label">ריפוי מלא!</span>
+                                <div class="stage-badge badge text-green" style="background-color: rgba(5,255,123,0.1); border: 1px solid var(--accent-green); margin-bottom:4px;">סגירת הפצע</div>
+                                <p class="small-text" style="font-size:0.75rem;">בניית רקמת עור עליונה וריפוי מלא</p>
                             </div>
                         </div>
                     </div>

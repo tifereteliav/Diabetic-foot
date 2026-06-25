@@ -110,9 +110,8 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Results Screen
         finalAchievement: document.getElementById('final-achievement'),
-        finalScore: document.getElementById('final-score'),
-        scoreCritique: document.getElementById('score-critique'),
-        stars: document.querySelectorAll('#star-rating .star'),
+        verificationCode: document.getElementById('verification-code'),
+        copyCodeBtn: document.getElementById('copy-code-btn'),
         restartBtn: document.getElementById('restart-btn'),
     };
 
@@ -224,28 +223,27 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', (e) => {
             if (state.q1Answered) return;
             
+            state.q1Answered = true;
             const selectedOpt = btn.getAttribute('data-opt');
             
-            if (selectedOpt === '3') { // Correct answer: TcPO2
-                state.q1Answered = true;
-                btn.classList.add('correct');
-                gameAudio.playSuccess();
-                updateScore(30);
-                
-                // Show Laser scanner interactive section
-                setTimeout(() => {
-                    elements.scannerAction.classList.remove('hidden');
-                    setupScannerDragging();
-                }, 800);
-            } else {
-                btn.classList.add('wrong');
-                gameAudio.playError();
-                updateScore(-5);
-                
-                // Brief shake or red flash
-                btn.style.transform = 'translateX(5px)';
-                setTimeout(() => { btn.style.transform = ''; }, 100);
-            }
+            // Record score quietly
+            state.q1Score = (selectedOpt === '3') ? 30 : 0;
+            updateScore(state.q1Score);
+            
+            // Highlight selected button neutrally
+            btn.classList.add('selected');
+            gameAudio.playClick();
+            
+            // Disable other options
+            elements.q1Options.forEach(opt => {
+                if (opt !== btn) opt.style.opacity = '0.6';
+            });
+            
+            // Show Laser scanner interactive section immediately regardless of choice
+            setTimeout(() => {
+                elements.scannerAction.classList.remove('hidden');
+                setupScannerDragging();
+            }, 800);
         });
     });
 
@@ -375,81 +373,70 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', () => {
             if (state.q2Answered) return;
             
+            state.q2Answered = true;
             const selectedOpt = btn.getAttribute('data-opt');
             
-            if (selectedOpt === '3') { // Target 150-250 mg/dL
-                state.q2Answered = true;
-                btn.classList.add('correct');
-                gameAudio.playSuccess();
-                updateScore(30);
-                
-                // Show Glucometer Section
-                setTimeout(() => {
-                    elements.glucoActionArea.classList.remove('hidden');
-                }, 800);
-            } else {
-                btn.classList.add('wrong');
-                gameAudio.playError();
-                updateScore(-5);
-                btn.style.transform = 'translateX(5px)';
-                setTimeout(() => { btn.style.transform = ''; }, 100);
-            }
+            // Record score quietly
+            state.q2Score = (selectedOpt === '3') ? 30 : 0;
+            updateScore(state.q2Score);
+            
+            // Highlight selected button neutrally
+            btn.classList.add('selected');
+            gameAudio.playClick();
+            
+            // Disable other options
+            elements.q2Options.forEach(opt => {
+                if (opt !== btn) opt.style.opacity = '0.6';
+            });
+            
+            // Show Glucometer Section immediately regardless of choice
+            setTimeout(() => {
+                elements.glucoActionArea.classList.remove('hidden');
+            }, 800);
         });
     });
 
-    // Glucometer Blood sugar measurement
-    elements.testSugarBtn.addEventListener('click', () => {
-        if (state.sugarMeasured) return;
-        
-        gameAudio.playBeep(1000, 'sine', 0.1, 0.08);
-        elements.testSugarBtn.disabled = true;
-        elements.glucoVal.textContent = "---";
-        
-        // Simulate reading
-        let count = 0;
-        let interval = setInterval(() => {
-            elements.glucoVal.textContent = Math.floor(Math.random() * 200 + 50);
-            count++;
-            if (count > 8) {
-                clearInterval(interval);
-                state.sugarMeasured = true;
-                elements.glucoVal.textContent = state.sugarValue;
-                elements.glucoVal.style.color = '#ff9f0a';
-                gameAudio.playBeep(1200, 'sine', 0.25, 0.1);
-                
-                // Enable therapy choice buttons
-                elements.giveJuiceBtn.disabled = false;
-                elements.giveInsulinBtn.disabled = false;
-            }
-        }, 100);
-    });
-
-    // Correct response: Give Juice / carbs
-    elements.giveJuiceBtn.addEventListener('click', () => {
+    // Glucometer actions
+    function resolveGlucoAction(action) {
         if (state.sugarCorrected) return;
-        
         state.sugarCorrected = true;
-        state.sugarValue = 178; // Target corrected sugar
-        elements.glucoVal.textContent = state.sugarValue;
-        elements.glucoVal.style.color = '#05ff7b';
         
-        gameAudio.playSuccess();
-        updateScore(20);
+        const feedbackText = document.getElementById('prep-feedback-1-text');
         
         elements.glucoAlert.classList.add('hidden');
-        elements.giveJuiceBtn.classList.add('correct');
+        elements.giveJuiceBtn.disabled = true;
         elements.giveInsulinBtn.disabled = true;
         
-        elements.prepFeedback1.classList.remove('hidden');
-    });
-
-    // Wrong response: Inject Insulin
-    elements.giveInsulinBtn.addEventListener('click', () => {
-        gameAudio.playError();
-        updateScore(-10);
+        gameAudio.playClick();
         
-        alert("סכנה חמורה! הזרקת אינסולין במצב של סוכר 112 mg/dL לפני תא לחץ תגרום לקריסת רמת הסוכר (היפוגליקמיה קשה ומסכנת חיים) במהלך הטיפול. תא לחץ אינו נגיש למענה מהיר! עליך לתת לו פחמימות כדי להעלות את הסוכר.");
-    });
+        if (action === 'juice') {
+            state.sugarValue = 178;
+            state.sugarSimValue = 178;
+            state.sugarActionScore = 20;
+            
+            elements.giveJuiceBtn.classList.add('selected');
+            elements.glucoVal.textContent = state.sugarValue;
+            elements.glucoVal.style.color = '#05ff7b'; // Safe green
+            
+            feedbackText.innerHTML = "נתת ליוסי פחמימות זמינות. רמת הסוכר עודכנה ל-<strong>178 mg/dL</strong>.";
+        } else {
+            state.sugarValue = 62;
+            state.sugarSimValue = 62;
+            state.sugarActionScore = 0; // Dangerous action
+            
+            elements.giveInsulinBtn.classList.add('selected');
+            elements.glucoVal.textContent = state.sugarValue;
+            elements.glucoVal.style.color = '#ff375f'; // Alarm red
+            
+            feedbackText.innerHTML = "הזרקת ליוסי אינסולין. רמת הסוכר עודכנה ל-<strong>62 mg/dL</strong>.";
+        }
+        
+        updateScore(state.sugarActionScore);
+        elements.prepFeedback1.classList.remove('hidden');
+    }
+
+    elements.giveJuiceBtn.addEventListener('click', () => resolveGlucoAction('juice'));
+    elements.giveInsulinBtn.addEventListener('click', () => resolveGlucoAction('insulin'));
 
     elements.toPrepPart2Btn.addEventListener('click', () => {
         gameAudio.playClick();
@@ -462,22 +449,26 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', () => {
             if (state.q3Answered) return;
             
+            state.q3Answered = true;
             const selectedOpt = btn.getAttribute('data-opt');
             
-            if (selectedOpt === 'b') { // Patient B is high risk
-                state.q3Answered = true;
-                btn.classList.add('correct');
-                gameAudio.playSuccess();
-                updateScore(30);
-                
-                elements.prepFeedback2.classList.remove('hidden');
-            } else {
-                btn.classList.add('wrong');
-                gameAudio.playError();
-                updateScore(-5);
-                btn.style.transform = 'translateX(5px)';
-                setTimeout(() => { btn.style.transform = ''; }, 100);
-            }
+            // Record score quietly
+            state.q3Score = (selectedOpt === 'b') ? 30 : 0;
+            updateScore(state.q3Score);
+            
+            // Highlight card neutrally
+            btn.classList.add('selected');
+            gameAudio.playClick();
+            
+            // Disable other options
+            elements.q3Options.forEach(opt => {
+                if (opt !== btn) opt.style.opacity = '0.6';
+            });
+            
+            // Proceed to Simulator immediately
+            setTimeout(() => {
+                elements.toDiveBtn.classList.remove('hidden');
+            }, 800);
         });
     });
 
@@ -506,7 +497,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updatePressureNeedle(1.0);
         
         elements.simPressure.textContent = '1.0 ATA';
-        elements.simSugar.textContent = '178 mg/dL';
+        elements.simSugar.textContent = `${state.sugarSimValue} mg/dL`;
         elements.simO2.textContent = '100%';
         
         state.eventTriggered.ear = false;
@@ -524,8 +515,8 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Slowly decrease blood sugar simulated levels due to HBOT effect
             if (!state.activeEvent || state.activeEvent !== 'hypo') {
-                // decrease by 0.5 mg/dl per second under pressure
-                state.sugarSimValue = Math.max(70, Math.floor(178 - (40 - state.timeRemaining) * 0.8));
+                // decrease by 0.8 mg/dl per second under pressure
+                state.sugarSimValue = Math.max(30, Math.floor(state.sugarValue - (40 - state.timeRemaining) * 0.8));
                 elements.simSugar.textContent = `${state.sugarSimValue} mg/dL`;
             }
             
@@ -542,7 +533,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (state.timeRemaining === 32 && !state.eventTriggered.ear) {
                 triggerEarEvent();
             }
-            if (state.timeRemaining === 18 && !state.eventTriggered.hypo) {
+            // Trigger hypo event at 18 seconds for normal state OR immediately if sugar drops below 50
+            if ((state.timeRemaining === 18 || state.sugarSimValue < 50) && !state.eventTriggered.hypo) {
                 triggerHypoEvent();
             }
             
@@ -754,46 +746,51 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- STAGE 4: RESULTS & SUMMARY ---
+    function generateVerificationCode(score) {
+        // Obfuscate score: multiply by 17, add a fixed offset, convert to hex
+        const obfuscated = ((score * 17) + 2459).toString(16).toUpperCase();
+        // Add a random 4-char suffix for variety
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        let randomPart = '';
+        for (let i = 0; i < 4; i++) {
+            randomPart += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return `DF-${obfuscated}-${randomPart}`;
+    }
+
     function renderResults(completedSuccessfully) {
-        // Calculate stars based on score
-        let starsCount = 1;
-        let critique = "";
         let achievement = "";
         
         if (!completedSuccessfully) {
-            starsCount = 1;
             achievement = "הטיפול נכשל בחירום!";
-            critique = "המטופל איבד הכרה במהלך הטיפול עקב היפוגליקמיה שלא טופלה בזמן, או שהטיפול נקטע מוקדם מדי. עליך לעקוב בקפידה אחר בטיחות הסוכר לפני ובמהלך הכניסה לתא הלחץ.";
-            elements.finalScore.textContent = `${state.score} (טיפול חלקי)`;
         } else {
             achievement = "סיימת את הטיפול בהצלחה!";
-            elements.finalScore.textContent = state.score;
-            
-            if (state.score >= 90) {
-                starsCount = 5;
-                critique = "עבודה מדהימה! אבחנת נכון בעזרת בדיקת TcPO2, איזנת את רמות הגלוקוז בצורה מונעת בטווח 150-250 mg/dL, בחרת את המטופל בסיכון, וניהלת את תא הלחץ ללא רבב. הצלת את רגלו של יוסי מקטיעה!";
-            } else if (state.score >= 75) {
-                starsCount = 4;
-                critique = "עבודה טובה מאוד! זיהית את הבדיקות והסיכונים וניהלת את תא הלחץ היטב. היו מספר שגיאות קלות בניהול הלחץ או המענה לאירועים, אך המטופל סיים את הטיפול בבטחה.";
-            } else if (state.score >= 60) {
-                starsCount = 3;
-                critique = "עברת את הטיפול. עם זאת, היו שגיאות בניהול בטיחות הסוכר או הלחץ בתא. מומלץ לחזור על הטיפול ולשים לב לשמירה על לחץ טיפולי של 2.0-2.4 ATA ולמניעת היפוגליקמיה.";
-            } else {
-                starsCount = 2;
-                critique = "הצלחת לסיים את הטיפול אך הניקוד נמוך מאוד. המטופל סבל מנזקי לחץ באוזניים או רמות סוכר לא יציבות. עליך לתרגל שוב כדי לרכוש את מיומנות הבטיחות הקריטית.";
-            }
         }
         
         elements.finalAchievement.textContent = achievement;
-        elements.scoreCritique.textContent = critique;
         
-        // Render Star ratings
-        elements.stars.forEach((star, index) => {
-            if (index < starsCount) {
-                star.classList.add('active');
-            } else {
-                star.classList.remove('active');
-            }
+        // Calculate normalized score: Max background score is ~190
+        const maxExpectedScore = 190;
+        const normalizedScore = Math.min(100, Math.max(0, Math.round((state.score / maxExpectedScore) * 100)));
+        
+        // Generate obfuscated verification code
+        const code = generateVerificationCode(normalizedScore);
+        elements.verificationCode.textContent = code;
+    }
+
+    if (elements.copyCodeBtn) {
+        elements.copyCodeBtn.addEventListener('click', () => {
+            const codeText = elements.verificationCode.textContent;
+            navigator.clipboard.writeText(codeText).then(() => {
+                elements.copyCodeBtn.textContent = 'הועתק בהצלחה!';
+                elements.copyCodeBtn.style.background = 'linear-gradient(135deg, var(--primary) 0%, #0099ff 100%)';
+                setTimeout(() => {
+                    elements.copyCodeBtn.textContent = 'העתק קוד אימות';
+                    elements.copyCodeBtn.style.background = '';
+                }, 2000);
+            }).catch(err => {
+                console.error('Error copying code:', err);
+            });
         });
     }
 
