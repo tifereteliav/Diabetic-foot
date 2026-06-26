@@ -931,11 +931,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if (success) {
             gameAudio.playSuccess();
             updateScore(15);
-            showGameModal("השוואת לחצים מוצלחת", "המטופל פימפם בהצלחה (שיטת ולסלבה) והשוואה את הלחצים באוזן התיכונה. הלחץ חזר לרמה נוחה.");
+            showGameModal("השוואת לחצים מוצלחת", "המטופל פימפם בהצלחה (שיטת ולסלבה) והשוואה את הלחצים באוזן התיכונה. הלחץ חזר לרמה נוחה.", () => {
+                if (state.timeRemaining > 22) {
+                    state.timeRemaining = 22;
+                }
+            });
         } else {
             gameAudio.playError();
             updateScore(-15);
-            showGameModal("השוואת לחצים נכשלה", "לא הגבת בזמן. המטופל סבל מכאבי אוזניים עזים, מה שאילץ אותך להאט את קצב עליית הלחץ. נגרם נזק קל לעור התוף (Barotrauma).");
+            showGameModal("השוואת לחצים נכשלה", "לא הגבת בזמן. המטופל סבל מכאבי אוזניים עזים, מה שאילץ אותך להאט את קצב עליית הלחץ. נגרם נזק קל לעור התוף (Barotrauma).", () => {
+                if (state.timeRemaining > 22) {
+                    state.timeRemaining = 22;
+                }
+            });
         }
     }
 
@@ -993,7 +1001,11 @@ document.addEventListener('DOMContentLoaded', () => {
             elements.simSugar.textContent = `${state.sugarSimValue} mg/dL`;
             gameAudio.playSuccess();
             updateScore(25);
-            showGameModal("הטיפול בהיפוגליקמיה הצליח", "מצוין! העברת לו גלוקוז נוזלי דרך שסתום האביזרים הייעודי של התא מבלי לפגוע בלחץ. המטופל שתה אותו, הסוכר עלה ל-115 mg/dL והוא התאושש במהירות.");
+            showGameModal("הטיפול בהיפוגליקמיה הצליח", "מצוין! העברת לו גלוקוז נוזלי דרך שסתום האביזרים הייעודי של התא מבלי לפגוע בלחץ. המטופל שתה אותו, הסוכר עלה ל-115 mg/dL והוא התאושש במהירות.", () => {
+                if (state.timeRemaining > 2) {
+                    state.timeRemaining = 2;
+                }
+            });
         } else {
             // Patient faints
             gameAudio.playError();
