@@ -45,6 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
         eventTimer: null,
         eventTimeLeft: 0,
         pressureScoreAcc: 0, // Accumulator for pressure scoring
+        isBonusActive: false,
     };
 
     // --- DOM ELEMENTS ---
@@ -756,8 +757,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     elements.toDiveBtn.addEventListener('click', () => {
         gameAudio.playClick();
-        showScreen(elements.screenSimulator);
-        startSimulation();
+        showScreen(elements.screenResults);
+        renderResults(true);
     });
 
     // --- STAGE 3: CHAMBER SIMULATOR ---
@@ -1039,6 +1040,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // Transition screen
         showScreen(elements.screenResults);
         renderResults(completedSuccessfully);
+        
+        if (state.isBonusActive) {
+            showBonusCompletion(completedSuccessfully);
+        }
     }
 
     // --- STAGE 4: RESULTS & SUMMARY ---
@@ -1104,6 +1109,93 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // --- BONUS SIMULATION START ---
+    const startBonusSimBtn = document.getElementById('start-bonus-sim-btn');
+    if (startBonusSimBtn) {
+        startBonusSimBtn.addEventListener('click', () => {
+            gameAudio.playClick();
+            state.isBonusActive = true;
+            showScreen(elements.screenSimulator);
+            startSimulation();
+        });
+    }
+
+    // --- COPY BONUS CODE BUTTON ---
+    const copyBonusCodeBtn = document.getElementById('copy-bonus-code-btn');
+    if (copyBonusCodeBtn) {
+        copyBonusCodeBtn.addEventListener('click', () => {
+            const codeText = document.getElementById('bonus-verification-code').textContent;
+            navigator.clipboard.writeText(codeText).then(() => {
+                copyBonusCodeBtn.textContent = 'הועתק בהצלחה!';
+                copyBonusCodeBtn.style.background = 'linear-gradient(135deg, var(--primary) 0%, #0099ff 100%)';
+                setTimeout(() => {
+                    copyBonusCodeBtn.textContent = 'העתק קוד אימות';
+                    copyBonusCodeBtn.style.background = '';
+                }, 2000);
+            }).catch(err => {
+                console.error('Error copying code:', err);
+            });
+        });
+    }
+
+    // --- SHOW BONUS COMPLETION CARD ---
+    function showBonusCompletion(completedSuccessfully) {
+        const mainCodeCard = document.getElementById('main-code-card');
+        const bonusCard = document.getElementById('bonus-card');
+        const bonusCompletionCard = document.getElementById('bonus-completion-card');
+        const bonusCompletionIcon = document.getElementById('bonus-completion-icon');
+        const bonusCompletionTitle = document.getElementById('bonus-completion-title');
+        const bonusCompletionMessage = document.getElementById('bonus-completion-message');
+        const bonusVerificationCode = document.getElementById('bonus-verification-code');
+        
+        // Hide original cards
+        if (mainCodeCard) mainCodeCard.classList.add('hidden');
+        if (bonusCard) bonusCard.classList.add('hidden');
+        
+        // Determine verification code
+        const allQuestionsCorrect = (state.q1Score === 30) && (state.q2Score === 30) && (state.q3Score === 30) && (state.sugarActionScore === 20) && state.intakeCorrect;
+        let code = (completedSuccessfully && allQuestionsCorrect) ? "Diabetic Foot 45" : "Diabetic Foot 67";
+        
+        if (bonusVerificationCode) {
+            bonusVerificationCode.textContent = code;
+        }
+        
+        if (completedSuccessfully) {
+            if (bonusCompletionIcon) bonusCompletionIcon.textContent = "🏆";
+            if (bonusCompletionTitle) {
+                bonusCompletionTitle.textContent = "אתם ממש אלופים!";
+                bonusCompletionTitle.style.color = "var(--accent-green)";
+            }
+            if (bonusCompletionMessage) {
+                bonusCompletionMessage.textContent = "עברתם את סימולציית תא הלחץ כמו מקצוענים אמיתיים והשלמתם את הטיפול בהצלחה!";
+            }
+            if (bonusCompletionCard) {
+                bonusCompletionCard.style.borderColor = "var(--accent-green)";
+                bonusCompletionCard.style.boxShadow = "0 0 15px rgba(5, 255, 123, 0.2)";
+            }
+        } else {
+            if (bonusCompletionIcon) bonusCompletionIcon.textContent = "💪";
+            if (bonusCompletionTitle) {
+                bonusCompletionTitle.textContent = "ניסיון מעולה!";
+                bonusCompletionTitle.style.color = "var(--accent-orange)";
+            }
+            if (bonusCompletionMessage) {
+                bonusCompletionMessage.textContent = "הסימולציה נקטעה בחירום, אך כל הכבוד על האומץ והניסיון להתמודד עם תא הלחץ! אתם אלופים בכל מקרה.";
+            }
+            if (bonusCompletionCard) {
+                bonusCompletionCard.style.borderColor = "var(--accent-orange)";
+                bonusCompletionCard.style.boxShadow = "0 0 15px rgba(255, 159, 10, 0.2)";
+            }
+        }
+        
+        if (bonusCompletionCard) {
+            bonusCompletionCard.classList.remove('hidden');
+            setTimeout(() => {
+                bonusCompletionCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
+        }
+    }
+
     // --- RESTART GAME ---
     elements.restartBtn.addEventListener('click', () => {
         gameAudio.playClick();
@@ -1125,8 +1217,16 @@ document.addEventListener('DOMContentLoaded', () => {
         state.sugarValue = 112;
         state.sugarCorrected = false;
         state.q3Answered = false;
+        state.isBonusActive = false;
         
         selectedPulses = [];
+        
+        const mainCodeCard = document.getElementById('main-code-card');
+        const bonusCard = document.getElementById('bonus-card');
+        const bonusCompletionCard = document.getElementById('bonus-completion-card');
+        if (mainCodeCard) mainCodeCard.classList.remove('hidden');
+        if (bonusCard) bonusCard.classList.remove('hidden');
+        if (bonusCompletionCard) bonusCompletionCard.classList.add('hidden');
         
         // Reset UI components
         elements.tcpo2Val.textContent = '--';
