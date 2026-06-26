@@ -757,12 +757,6 @@ document.addEventListener('DOMContentLoaded', () => {
     elements.toDiveBtn.addEventListener('click', () => {
         gameAudio.playClick();
         showScreen(elements.screenSimulator);
-        elements.briefingOverlay.classList.remove('hidden');
-    });
-
-    elements.startDiveConfirmBtn.addEventListener('click', () => {
-        gameAudio.playClick();
-        elements.briefingOverlay.classList.add('hidden');
         startSimulation();
     });
 
@@ -1093,6 +1087,23 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // --- BONUS PROTOCOL GUIDE TOGGLE ---
+    const bonusToggleBtn = document.getElementById('bonus-toggle-btn');
+    const bonusContent = document.getElementById('bonus-content');
+    if (bonusToggleBtn && bonusContent) {
+        bonusToggleBtn.addEventListener('click', () => {
+            gameAudio.playClick();
+            if (bonusContent.classList.contains('hidden')) {
+                bonusContent.classList.remove('hidden');
+                setTimeout(() => {
+                    bonusContent.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 50);
+            } else {
+                bonusContent.classList.add('hidden');
+            }
+        });
+    }
+
     // --- RESTART GAME ---
     elements.restartBtn.addEventListener('click', () => {
         gameAudio.playClick();
@@ -1134,7 +1145,8 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.prepQ2Section.classList.add('hidden');
         elements.prepFeedback1.classList.add('hidden');
         elements.toDiveBtn.classList.add('hidden');
-        elements.briefingOverlay.classList.remove('hidden');
+        const bonusContent = document.getElementById('bonus-content');
+        if (bonusContent) bonusContent.classList.add('hidden');
         elements.modalOverlay.classList.add('hidden');
         elements.glucoActionArea.classList.add('hidden');
         elements.glucoAlert.classList.remove('hidden');

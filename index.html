@@ -359,31 +359,7 @@
 
             <!-- 4. SIMULATOR / THE DIVE SCREEN -->
             <section id="screen-simulator" class="game-screen hidden">
-                <!-- Pre-Dive Briefing Overlay -->
-                <div id="briefing-overlay" class="briefing-overlay">
-                    <div class="briefing-card">
-                        <div class="briefing-icon">📋</div>
-                        <h3>תדריך פרוטוקול צלילה</h3>
-                        <p class="briefing-subtitle">עליך לנהל את הטיפול בתא הלחץ עבור המטופל יוסי</p>
-                        
-                        <div class="briefing-steps">
-                            <div class="briefing-step">
-                                <span class="step-num">1</span>
-                                <p><strong>העלאת לחץ:</strong> גרור את הסליידר כדי להעלות את הלחץ לטווח הטיפולי המסומן בירוק (<strong>2.0 - 2.4 ATA</strong>).</p>
-                            </div>
-                            <div class="briefing-step">
-                                <span class="step-num">2</span>
-                                <p><strong>שמירה על יציבות:</strong> שמור על המחוג בטווח הירוק. סטייה למטה תפגע ביעילות הטיפול, וסטייה למעלה מסוכנת!</p>
-                            </div>
-                            <div class="briefing-step">
-                                <span class="step-num">3</span>
-                                <p><strong>אירועי חירום:</strong> שים לב להתראות המטופל. אם יופיע אירוע חירום (כאב אוזניים או נפילת סוכר), פעל מיד לפי כפתורי הבקרה שיפתחו.</p>
-                            </div>
-                        </div>
-                        
-                        <button id="start-dive-confirm-btn" class="btn btn-accent btn-lg pulse-anim">התחל טיפול (צלילה)</button>
-                    </div>
-                </div>
+
 
                 <div class="simulator-layout">
                     <!-- Simulator Controls -->
@@ -492,6 +468,30 @@
                         <button id="copy-code-btn" class="btn btn-accent btn-sm" style="margin-top: 10px; width: 100%;">העתק קוד אימות</button>
                     </div>
 
+                    <!-- Bonus Section -->
+                    <div class="card bonus-card text-right" style="margin-top: 15px;">
+                        <button id="bonus-toggle-btn" class="btn btn-accent btn-lg" style="width: 100%;">🎁 בונוס נוסף לאתגר: סימולטור תא לחץ</button>
+                        <div id="bonus-content" class="bonus-content hidden" style="margin-top: 20px; border-top: 1px solid rgba(0, 255, 204, 0.2); padding-top: 20px;">
+                            <div class="briefing-icon text-center" style="text-align: center; text-shadow: 0 0 10px rgba(0, 255, 204, 0.3);">📋</div>
+                            <h3 class="text-center" style="color: var(--cyan); margin-top: 0; margin-bottom: 10px; text-align: center; font-weight: 700;">תדריך פרוטוקול צלילה</h3>
+                            <p class="briefing-subtitle text-center" style="text-align: center; color: var(--text-muted); font-size: 0.95rem; margin-bottom: 25px;">פרוטוקול הטיפול בתא הלחץ עבור המטופל יוסי</p>
+                            
+                            <div class="briefing-steps" style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 10px; text-align: right;">
+                                <div class="briefing-step" style="display: flex; align-items: flex-start; gap: 12px;">
+                                    <span class="step-num" style="background-color: rgba(0, 255, 204, 0.1); border: 1px solid var(--cyan); color: var(--cyan); font-weight: bold; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.85rem; box-shadow: 0 0 8px rgba(0, 255, 204, 0.2);">1</span>
+                                    <p style="margin: 0; font-size: 0.9rem; line-height: 1.4; color: var(--text-light);"><strong>העלאת לחץ:</strong> גרור את הסליידר כדי להעלות את הלחץ לטווח הטיפולי המסומן בירוק (<strong>2.0 - 2.4 ATA</strong>).</p>
+                                </div>
+                                <div class="briefing-step" style="display: flex; align-items: flex-start; gap: 12px;">
+                                    <span class="step-num" style="background-color: rgba(0, 255, 204, 0.1); border: 1px solid var(--cyan); color: var(--cyan); font-weight: bold; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.85rem; box-shadow: 0 0 8px rgba(0, 255, 204, 0.2);">2</span>
+                                    <p style="margin: 0; font-size: 0.9rem; line-height: 1.4; color: var(--text-light);"><strong>שמירה על יציבות:</strong> שמור על המחוג בטווח הירוק. סטייה למטה תפגע ביעילות הטיפול, וסטייה למעלה מסוכנת!</p>
+                                </div>
+                                <div class="briefing-step" style="display: flex; align-items: flex-start; gap: 12px;">
+                                    <span class="step-num" style="background-color: rgba(0, 255, 204, 0.1); border: 1px solid var(--cyan); color: var(--cyan); font-weight: bold; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.85rem; box-shadow: 0 0 8px rgba(0, 255, 204, 0.2);">3</span>
+                                    <p style="margin: 0; font-size: 0.9rem; line-height: 1.4; color: var(--text-light);"><strong>אירועי חירום:</strong> שים לב להתראות המטופל. אם יופיע אירוע חירום (כאב אוזניים או נפילת סוכר), פעל מיד לפי כפתורי הבקרה שיפתחו.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <!-- Healing progression foot animation -->
                     <div class="healing-animation-container card">
                         <h4>שלבי ריפוי הפצע בעקבות הטיפול</h4>
