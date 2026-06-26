@@ -114,12 +114,12 @@
                                 <img src="tibialis.png" alt="מיקומי דופק בכף רגל" style="width: 100%; border: 1px solid var(--card-border); border-radius: 12px; display: block; opacity: 0.9;" />
                                 
                                 <!-- Hotspot 1: Posterior Tibial (דופק טיביאלי) -->
-                                <div style="position: absolute; top: 35.3%; left: 62.6%; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; z-index: 10;">
+                                <div style="position: absolute; top: 53.5%; left: 62.7%; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; z-index: 10;">
                                     <button type="button" class="pulse-hotspot" data-pulse="pt" title="דופק טיביאלי אחורי (Posterior Tibial)">
                                         <span class="hotspot-ring"></span>
                                         <span class="hotspot-dot"></span>
                                     </button>
-                                    <span style="font-size: 0.65rem; background-color: rgba(5,6,11,0.8); border: 1px solid var(--card-border); padding: 2px 4px; border-radius: 4px; margin-top: 2px; white-space: nowrap;">דופק טיביאלי</span>
+                                    <span style="font-size: 0.65rem; background-color: rgba(5,6,11,0.8); border: 1px solid var(--card-border); padding: 2px 4px; border-radius: 4px; white-space: nowrap; position: relative; left: 22px; top: -8px;">דופק טיביאלי</span>
                                 </div>
                                 
                                 <!-- Hotspot 2: Dorsalis Pedis (דופק דורסאלי) -->
@@ -386,6 +386,19 @@
                 </div>
 
                 <div class="simulator-layout">
+                    <!-- Real-Time Instructions Banner -->
+                    <div class="sim-instruction-banner" style="grid-column: 1 / -1; background: rgba(0, 229, 255, 0.08); border: 1px solid var(--primary); padding: 12px 15px; border-radius: 12px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; box-shadow: 0 0 10px rgba(0, 229, 255, 0.15);">
+                        <span style="font-size: 1.2rem;">💡</span>
+                        <div style="font-size: 0.85rem; line-height: 1.4; color: var(--text-light); text-align: right; width: 100%;">
+                            <strong>מה עליך לעשות בסימולציה?</strong>
+                            <ul style="margin: 5px 15px 0 0; padding: 0; list-style-type: decimal; direction: rtl;">
+                                <li><strong>העלו את הלחץ</strong> לטווח הטיפולי (<strong>2.0 - 2.4 ATA</strong>) המסומן בירוק בשעון הלחץ, באמצעות גרירת הסליידר שמתחת לשעון.</li>
+                                <li><strong>שמרו על הלחץ יציב</strong> בתוך הטווח הירוק עד שקוצב הזמן (בפינה הימנית למעלה) יסתיים ויגיע ל-00:00.</li>
+                                <li><strong>טפלו באירועי חירום</strong> (כמו כאבי אוזניים או נפילת סוכר) מיד כשהם צצים, על ידי לחיצה על כפתורי הטיפול האדומים/כתומים שייפתחו למטה.</li>
+                            </ul>
+                        </div>
+                    </div>
+
                     <!-- Simulator Dashboard -->
                     <div class="sim-dashboard card">
                         <div class="dashboard-header">
