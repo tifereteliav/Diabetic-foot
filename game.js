@@ -426,27 +426,99 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // TcPO2 Laser Scanner Touch & Mouse Drag Setup
+    let scannerInitialized = false;
     function setupScannerDragging() {
+        if (scannerInitialized) return;
+        scannerInitialized = true;
+
         let isDragging = false;
         let startX, startY;
         let sensorX = 20; // Initial left (from style.css)
         let sensorY = 20; // Initial top (from style.css)
+        let scanInterval = null;
         
         const sensor = elements.laserSensor;
         const container = elements.scannerZone;
         const wound = elements.footWound;
+
+        function updateScanner() {
+            const sensorRect = sensor.getBoundingClientRect();
+            const woundRect = wound.getBoundingClientRect();
+            
+            // Center of sensor
+            const sCenterX = sensorRect.left + sensorRect.width / 2;
+            const sCenterY = sensorRect.top + sensorRect.height / 2;
+            
+            // Center of wound
+            const wCenterX = woundRect.left + woundRect.width / 2;
+            const wCenterY = woundRect.top + woundRect.height / 2;
+            
+            // Distance formula
+            const dist = Math.sqrt(Math.pow(sCenterX - wCenterX, 2) + Math.pow(sCenterY - wCenterY, 2));
+            
+            if (dist < 40 && !state.scanComplete) {
+                if (!scanInterval) {
+                    container.classList.add('scanning-active');
+                    elements.scanFeedback.classList.remove('hidden');
+                    
+                    scanInterval = setInterval(() => {
+                        if (state.tcpo2Value < state.targetTcPO2) {
+                            state.tcpo2Value += 1;
+                            elements.tcpo2Val.textContent = state.tcpo2Value;
+                            
+                            // Play sonar scanner sound occasionally
+                            if (Math.random() < 0.25) {
+                                gameAudio.playScan();
+                            }
+                        } else {
+                            // Scanning Complete!
+                            clearInterval(scanInterval);
+                            scanInterval = null;
+                            state.scanComplete = true;
+                            container.classList.remove('scanning-active');
+                            elements.scanFeedback.classList.add('hidden');
+                            sensor.style.display = 'none'; // hide sensor
+                            
+                            gameAudio.playSuccess();
+                            updateScore(20);
+                            
+                            // Display explanation
+                            elements.tcpo2Explanation.innerHTML = `
+                                <strong>תוצאה נמוכה! 22 mmHg</strong><br>
+                                ערך תקין סביב כף הרגל הוא מעל 40 mmHg.
+                                רמה של 22 mmHg מראה על איסכמיה מקומית חמורה (חוסר חמצן ברקמה). 
+                                מצב זה מנבא כי פוטנציאל הריפוי הספונטני נמוך, אך מעיד על <strong>התאמה מצוינת לטיפול בתא לחץ</strong>, אשר יציף את הרקמות בחמצן ויעודד ריפוי!
+                            `;
+                            elements.tcpo2Explanation.classList.remove('hidden');
+                            elements.toPrepBtn.classList.remove('hidden');
+                        }
+                    }, 80);
+                }
+            } else {
+                if (scanInterval) {
+                    clearInterval(scanInterval);
+                    scanInterval = null;
+                    container.classList.remove('scanning-active');
+                    elements.scanFeedback.classList.add('hidden');
+                }
+            }
+        }
         
+        // Dragging Event Handlers
         sensor.addEventListener('pointerdown', (e) => {
+            e.preventDefault();
             isDragging = true;
             sensor.setPointerCapture(e.pointerId);
             startX = e.clientX - sensorX;
             startY = e.clientY - sensorY;
             gameAudio.playClick();
             sensor.style.cursor = 'grabbing';
+            updateScanner();
         });
         
         sensor.addEventListener('pointermove', (e) => {
             if (!isDragging) return;
+            e.preventDefault();
             
             // Calculate new position
             let x = e.clientX - startX;
@@ -467,73 +539,56 @@ document.addEventListener('DOMContentLoaded', () => {
             sensor.style.left = `${sensorX}px`;
             sensor.style.top = `${sensorY}px`;
             
-            // Check overlap with the wound
-            const sensorRect = sensor.getBoundingClientRect();
-            const woundRect = wound.getBoundingClientRect();
-            
-            // Center of sensor
-            const sCenterX = sensorRect.left + sensorRect.width / 2;
-            const sCenterY = sensorRect.top + sensorRect.height / 2;
-            
-            // Center of wound
-            const wCenterX = woundRect.left + woundRect.width / 2;
-            const wCenterY = woundRect.top + woundRect.height / 2;
-            
-            // Distance formula
-            const dist = Math.sqrt(Math.pow(sCenterX - wCenterX, 2) + Math.pow(sCenterY - wCenterY, 2));
-            
-            if (dist < 40) { // Hovering over wound
-                if (!container.classList.contains('scanning-active')) {
-                    container.classList.add('scanning-active');
-                    elements.scanFeedback.classList.remove('hidden');
-                }
-                
-                // Play sonar scanner sound occasionally
-                if (Math.random() < 0.15) {
-                    gameAudio.playScan();
-                }
-                
-                // Increment TcPO2 value
-                if (state.tcpo2Value < state.targetTcPO2) {
-                    state.tcpo2Value += 1;
-                    elements.tcpo2Val.textContent = state.tcpo2Value;
-                } else if (state.tcpo2Value === state.targetTcPO2 && !state.scanComplete) {
-                    // Scanning Complete!
-                    state.scanComplete = true;
-                    container.classList.remove('scanning-active');
-                    elements.scanFeedback.classList.add('hidden');
-                    sensor.style.display = 'none'; // hide sensor
-                    
-                    gameAudio.playSuccess();
-                    updateScore(20);
-                    
-                    // Display explanation
-                    elements.tcpo2Explanation.innerHTML = `
-                        <strong>תוצאה נמוכה! 22 mmHg</strong><br>
-                        ערך תקין סביב כף הרגל הוא מעל 40 mmHg.
-                        רמה של 22 mmHg מראה על איסכמיה מקומית חמורה (חוסר חמצן ברקמה). 
-                        מצב זה מנבא כי פוטנציאל הריפוי הספונטני נמוך, אך מעיד על <strong>התאמה מצוינת לטיפול בתא לחץ</strong>, אשר יציף את הרקמות בחמצן ויעודד ריפוי!
-                    `;
-                    elements.tcpo2Explanation.classList.remove('hidden');
-                    elements.toPrepBtn.classList.remove('hidden');
-                }
-            } else {
-                container.classList.remove('scanning-active');
-                elements.scanFeedback.classList.add('hidden');
-            }
+            updateScanner();
         });
         
         sensor.addEventListener('pointerup', (e) => {
             isDragging = false;
             sensor.style.cursor = 'grab';
-            container.classList.remove('scanning-active');
-            elements.scanFeedback.classList.add('hidden');
+            updateScanner();
         });
         
         sensor.addEventListener('pointercancel', () => {
             isDragging = false;
-            container.classList.remove('scanning-active');
-            elements.scanFeedback.classList.add('hidden');
+            updateScanner();
+        });
+
+        // Click / Tap Fallback: Click anywhere on container to move sensor
+        container.addEventListener('pointerdown', (e) => {
+            // Do not trigger if they clicked on the sensor itself or if scan is already complete
+            if (e.target === sensor || sensor.contains(e.target) || state.scanComplete) return;
+            e.preventDefault();
+
+            const rect = container.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const clickY = e.clientY - rect.top;
+            
+            const sensorW = sensor.clientWidth;
+            const sensorH = sensor.clientHeight;
+            
+            sensorX = clickX - sensorW / 2;
+            sensorY = clickY - sensorH / 2;
+            
+            const maxLeft = container.clientWidth - sensorW;
+            const maxTop = container.clientHeight - sensorH;
+            
+            if (sensorX < 0) sensorX = 0;
+            if (sensorX > maxLeft) sensorX = maxLeft;
+            if (sensorY < 0) sensorY = 0;
+            if (sensorY > maxTop) sensorY = maxTop;
+            
+            // Smoothly slide the sensor to the tapped position
+            sensor.style.transition = 'left 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), top 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)';
+            sensor.style.left = `${sensorX}px`;
+            sensor.style.top = `${sensorY}px`;
+            
+            gameAudio.playClick();
+            
+            // Perform scan check after transition
+            setTimeout(() => {
+                sensor.style.transition = '';
+                updateScanner();
+            }, 300);
         });
     }
 
