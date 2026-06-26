@@ -386,16 +386,42 @@
                 </div>
 
                 <div class="simulator-layout">
-                    <!-- Real-Time Instructions Banner -->
-                    <div class="sim-instruction-banner" style="grid-column: 1 / -1; background: rgba(0, 229, 255, 0.08); border: 1px solid var(--primary); padding: 12px 15px; border-radius: 12px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; box-shadow: 0 0 10px rgba(0, 229, 255, 0.15);">
-                        <span style="font-size: 1.2rem;">💡</span>
-                        <div style="font-size: 0.85rem; line-height: 1.4; color: var(--text-light); text-align: right; width: 100%;">
-                            <strong>מה עליך לעשות בסימולציה?</strong>
-                            <ul style="margin: 5px 15px 0 0; padding: 0; list-style-type: decimal; direction: rtl;">
-                                <li><strong>העלו את הלחץ</strong> לטווח הטיפולי (<strong>2.0 - 2.4 ATA</strong>) המסומן בירוק בשעון הלחץ, באמצעות גרירת הסליידר שמתחת לשעון.</li>
-                                <li><strong>שמרו על הלחץ יציב</strong> בתוך הטווח הירוק עד שקוצב הזמן (בפינה הימנית למעלה) יסתיים ויגיע ל-00:00.</li>
-                                <li><strong>טפלו באירועי חירום</strong> (כמו כאבי אוזניים או נפילת סוכר) מיד כשהם צצים, על ידי לחיצה על כפתורי הטיפול האדומים/כתומים שייפתחו למטה.</li>
-                            </ul>
+                    <!-- Simulator Controls -->
+                    <div class="sim-controls card">
+                        <h4>לוח בקרה היפרברי</h4>
+                        <p class="control-desc">העלו את לחץ התא באמצעות הסליידר לטווח הטיפול המומלץ: <strong>2.0 - 2.4 ATA</strong>. שמרו על יציבות הלחץ!</p>
+                        
+                        <div class="gauge-container">
+                            <div class="pressure-gauge-visual">
+                                <div class="gauge-target-zone"></div>
+                                <div class="gauge-needle" id="pressure-needle"></div>
+                                <span class="gauge-center-dot"></span>
+                                <div class="gauge-ticks">
+                                    <span>1.0</span>
+                                    <span>1.5</span>
+                                    <span>2.0</span>
+                                    <span>2.5</span>
+                                    <span>3.0</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="slider-control">
+                            <label for="pressure-slider" class="slider-label">שסתום דחיסה / פריקה</label>
+                            <input type="range" id="pressure-slider" min="1.0" max="3.0" step="0.05" value="1.0" class="styled-slider">
+                        </div>
+
+                        <!-- Emergency Alarm Panel -->
+                        <div id="sim-event-panel" class="event-panel-card hidden">
+                            <div class="event-header-box">
+                                <span class="alarm-icon">⚠</span>
+                                <span id="event-title">אירוע חירום בתא!</span>
+                            </div>
+                            <p id="event-desc">המטופל מתלונן על כאבי אוזניים עקב עליית לחץ מהירה מדי.</p>
+                            <div class="event-actions">
+                                <button id="event-action-btn" class="btn btn-accent btn-block">הורה למטופל לבצע פעולת פימפום (Valsalva)</button>
+                                <button id="emergency-abort-btn" class="btn btn-danger hidden">עצור טיפול דחוף ופרוק לחץ!</button>
+                            </div>
                         </div>
                     </div>
 
@@ -436,45 +462,6 @@
                             <div class="stat-box">
                                 <span class="stat-label">לחץ בתא</span>
                                 <span class="stat-value text-green" id="sim-pressure">1.0 ATA</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Simulator Controls -->
-                    <div class="sim-controls card">
-                        <h4>לוח בקרה היפרברי</h4>
-                        <p class="control-desc">העלו את לחץ התא באמצעות הסליידר לטווח הטיפול המומלץ: <strong>2.0 - 2.4 ATA</strong>. שמרו על יציבות הלחץ!</p>
-                        
-                        <div class="gauge-container">
-                            <div class="pressure-gauge-visual">
-                                <div class="gauge-target-zone"></div>
-                                <div class="gauge-needle" id="pressure-needle"></div>
-                                <span class="gauge-center-dot"></span>
-                                <div class="gauge-ticks">
-                                    <span>1.0</span>
-                                    <span>1.5</span>
-                                    <span>2.0</span>
-                                    <span>2.5</span>
-                                    <span>3.0</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="slider-control">
-                            <label for="pressure-slider" class="slider-label">שסתום דחיסה / פריקה</label>
-                            <input type="range" id="pressure-slider" min="1.0" max="3.0" step="0.05" value="1.0" class="styled-slider">
-                        </div>
-
-                        <!-- Emergency Alarm Panel -->
-                        <div id="sim-event-panel" class="event-panel-card hidden">
-                            <div class="event-header-box">
-                                <span class="alarm-icon">⚠</span>
-                                <span id="event-title">אירוע חירום בתא!</span>
-                            </div>
-                            <p id="event-desc">המטופל מתלונן על כאבי אוזניים עקב עליית לחץ מהירה מדי.</p>
-                            <div class="event-actions">
-                                <button id="event-action-btn" class="btn btn-accent btn-block">הורה למטופל לבצע פעולת פימפום (Valsalva)</button>
-                                <button id="emergency-abort-btn" class="btn btn-danger hidden">עצור טיפול דחוף ופרוק לחץ!</button>
                             </div>
                         </div>
                     </div>
